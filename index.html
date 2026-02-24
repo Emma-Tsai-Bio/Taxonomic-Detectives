@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猜猜我是誰：五界大探索</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* 1. THE SETUP - 全螢幕簡報模式 */
+        * {
+            box-sizing: border-box;
+        }
+
+        p {
+            margin: 0;
+            margin-bottom: 15px;
+        }
+
+        body {
+            background-color: #0f172a; /* 簡報外圍全黑背景 */
+            margin: 0;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden; /* 隱藏卷軸，變成真正的單頁簡報 */
+            font-family: 'Noto Sans TC', 'Lato', sans-serif;
+            cursor: pointer; /* 讓滑鼠變成手指，提示可以點擊 */
+        }
+
+        /* 2. SLIDE CONTAINER */
+        .slide-container {
+            display: none; /* 預設全部隱藏，靠 JS 控制 */
+            align-items: flex-start;
+            background: radial-gradient(circle at top right, #1e293b, #0f172a);
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            flex-direction: column;
+            height: 720px;
+            justify-content: flex-start;
+            overflow: hidden;
+            padding: 50px 60px;
+            position: absolute;
+            width: 1280px;
+            border: 1px solid #475569;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        .slide-container.active {
+            display: flex; /* 只顯示當前的投影片 */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Subtle glowing background design */
+        .slide-container::before {
+            content: '';
+            position: absolute;
+            top: -150px;
+            right: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(34,197,94,0.08) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .slide-container::after {
+            content: '';
+            position: absolute;
+            bottom: -200px;
+            left: -150px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(56,189,248,0.06) 0%, rgba(0,0,0,0) 70%);
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .slide-container > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 3. TYPOGRAPHY */
+        h1, h2, h3, h4 {
+            margin: 0;
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+
+        .slide-title {
+            font-size: 44px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            text-align: left;
+            width: 100%;
+            color: #38bdf8;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 15px;
+        }
+
+        .content-area {
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: flex-start;
+            width: 100%;
+        }
+
+        .slide1-content-area {
+            align-items: center;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            justify-content: center;
+            width: 100%;
+        }
+
+        /* 4. LAYOUTS */
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            width: 100%;
+            align-items: center;
+        }
+
+        .two-column.tiled {
+            align-items: stretch;
+            height: 100%;
+            padding-top: 10px;
+        }
+
+        .two-column.tiled > div {
+            background-color: rgba(30, 41, 59, 0.7);
+            border-radius: 20px;
+            border: 1px solid #475569;
+            padding: 40px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .two-column.tiled h3 {
+            color: #f8fafc;
+            font-size: 36px;
+            margin-bottom: 24px;
+            border-bottom: 2px dashed #475569;
+            padding-bottom: 15px;
+        }
+
+        /* Bullet Points for Clues */
+        .bullet-list {
+            width: 100%;
+            max-width: 1100px;
+            margin-top: 0px;
+        }
+
+        .bullet-list ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .bullet-list li {
+            background-color: rgba(30, 41, 59, 0.8);
+            border-radius: 16px;
+            padding: 24px 30px 24px 85px;
+            position: relative;
+            border-left: 8px solid #475569;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 130px; /* 固定高度防止跑版 */
+        }
+
+        /* Icons for Points */
+        .bullet-list i {
+            position: absolute;
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 32px;
+        }
+
+        .bullet-list li:nth-child(1) { border-left-color: #eab308; }
+        .bullet-list li:nth-child(2) { border-left-color: #94a3b8; }
+        .bullet-list li:nth-child(3) { border-left-color: #b45309; }
+
+        .bullet-list li:nth-child(1) i { color: #eab308; }
+        .bullet-list li:nth-child(2) i { color: #94a3b8; }
+        .bullet-list li:nth-child(3) i { color: #b45309; }
+
+        /* 修正標題的粗體不要影響到內文關鍵字 */
+        .bullet-list li > strong {
+            display: block;
+            font-size: 26px;
+            margin-bottom: 10px;
+            color: #f8fafc;
+        }
+
+        .bullet-text {
+            font-size: 24px;
+            color: #cbd5e1;
+            line-height: 1.6;
+            margin-bottom: 0;
+        }
+        
+        /* 線索內文如果有特別強調的關鍵字 */
+        .bullet-text strong {
+            color: #eab308;
+            font-weight: 700;
+        }
+
+        /* 5. 動畫與片段顯示邏輯 (Fragments) */
+        .fragment {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
+        }
+
+        .fragment.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        /* 6. ANSWER SLIDE STYLES */
+        .answer-box {
+            background-color: rgba(30, 41, 59, 0.6);
+            padding: 50px 40px;
+            border-radius: 24px;
+            border: 1px solid #475569;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+
+        .target-name {
+            font-size: 52px;
+            color: #eab308;
+            margin-bottom: 30px;
+            font-weight: 900;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .final-answer {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            color: #fff;
+            font-weight: 700;
+            padding: 20px 40px;
+            border-radius: 20px;
+            display: inline-block;
+            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+            font-size: 40px;
+            line-height: 1.4;
+            border: 2px solid #4ade80;
+        }
+
+        .image-wrapper {
+            border-radius: 20px;
+            height: 480px;
+            width: 100%;
+            overflow: hidden;
+            border: 4px solid #334155;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            background-color: #0f172a;
+        }
+
+        .image-wrapper img {
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        /* 提示字樣 */
+        .click-hint {
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            text-align: center;
+            color: #64748b;
+            font-size: 18px;
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+
+        /* Utility classes */
+        .text-gold { color: #eab308; }
+        .text-silver { color: #94a3b8; }
+        .text-bronze { color: #b45309; }
+        .text-red { color: #ef4444; }
+        .text-green { color: #22c55e; }
+        .text-slate { color: #cbd5e1; }
+    </style>
+</head>
+<body>
+
+<!-- Slide 1: Game Rules -->
+<div class="slide-container active" id="slide1">
+    <div class="slide1-content-area">
+        <h2 class="slide-title" style="text-align: center; border: none; font-size: 52px; color: #f8fafc; margin-bottom: 40px;">
+            猜猜我是誰：五界大探索 <span class="text-green">新版遊戲規則</span>
+        </h2>
+        <div class="two-column tiled">
+            <!-- Tile 1: Scoring -->
+            <div>
+                <h3>🏆 計分與流程</h3>
+                <ul style="list-style: none; padding: 0; font-size: 24px; color: #cbd5e1; line-height: 1.8; text-align: left; padding-left: 20px;">
+                    <li><strong class="text-gold">第一段線索蓋牌：</strong> 得 5 分</li>
+                    <li><strong class="text-silver">第二段線索蓋牌：</strong> 得 3 分</li>
+                    <li><strong class="text-bronze">第三段線索蓋牌：</strong> 得 1 分</li>
+                    <li><strong class="text-red">答錯不扣分：</strong> 0 分，鼓勵勇敢挑戰！</li>
+                    <li style="margin-top: 25px; border-top: 1px solid #475569; padding-top: 25px; font-size: 22px;">
+                        每段線索給 <strong style="color:#fff;">10~15 秒</strong>。<br>
+                        老師喊「3,2,1請蓋牌」！蓋牌後無法修改，沒蓋牌可繼續看下一段。
+                    </li>
+                </ul>
+            </div>
+            <!-- Tile 2: Requirements -->
+            <div>
+                <h3>📝 作答要求</h3>
+                <div style="background-color: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 30px; text-align: center; margin-top: 15px; flex-grow: 1;">
+                    <p style="color: #f8fafc; font-size: 26px; font-weight: bold; margin-bottom: 20px;">必須同時寫出：</p>
+                    <p style="font-size: 40px; color: #22c55e; font-weight: 700; margin-bottom: 20px;">「界」 + 「類群」</p>
+                    <p class="text-slate" style="font-size: 22px;">才算完全答對！</p>
+                    <hr style="border: none; border-top: 1px dashed #475569; margin: 25px 0;">
+                    <p class="text-slate" style="font-size: 24px; margin-bottom: 15px;">⭕ 例如：動物界－哺乳類</p>
+                    <p class="text-red" style="font-size: 22px;">❌ 僅寫「動物」或「哺乳類」不給分</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="click-hint"><i class="fa-solid fa-mouse-pointer"></i> 點擊畫面任意處 或 按下空白鍵 開始遊戲</div>
+</div>
+
+<!-- ================= Q1 ================= -->
+<div class="slide-container" id="slide2">
+    <h2 class="slide-title">第 1 題</h2>
+    <div class="content-area">
+        <div class="bullet-list">
+            <ul>
+                <li>
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索一：得 5 分】</strong>
+                    <p class="bullet-text">我是多細胞生物，我的細胞有細胞壁，而且我演化出了「維管束」構造。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索二：得 3 分】</strong>
+                    <p class="bullet-text">雖然我有維管束，但我「不會開花」，也沒有種子，我是靠「孢子」繁殖的。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索三：得 1 分】</strong>
+                    <p class="bullet-text">我的幼葉通常呈現「捲曲狀」，葉片背面常有褐色的孢子囊群。</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide3">
+    <h2 class="slide-title">🎯 答案揭曉</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="answer-box">
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
+                <h3 class="target-name">蕨類</h3>
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
+                <div class="final-answer">
+                    <span style="font-size: 30px; opacity: 0.9;">植物界</span><br>
+                    ➔ 蕨類
+                </div>
+            </div>
+            <div>
+                <div class="image-wrapper"><img src="https://www.wavehill.org/uploads/plants/_sm/259311/fern-top-image-2022-07-20_140347_wave-hill.jpg" alt="Fern"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Q2 ================= -->
+<div class="slide-container" id="slide4">
+    <h2 class="slide-title">第 2 題</h2>
+    <div class="content-area">
+        <div class="bullet-list">
+            <ul>
+                <li>
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索一：得 5 分】</strong>
+                    <p class="bullet-text">我可以進行光合作用自己製造養分，我是生態系中的生產者。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索二：得 3 分】</strong>
+                    <p class="bullet-text">我是單細胞或群體生活的生物，請注意，我的細胞內「沒有葉綠體」，但我有葉綠素。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索三：得 1 分】</strong>
+                    <p class="bullet-text">我最大的特徵是細胞內「沒有真正的細胞核 (無核膜)」，我不屬於植物界也不屬於原生生物界。</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide5">
+    <h2 class="slide-title">🎯 答案揭曉</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="answer-box">
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
+                <h3 class="target-name">藍綠菌 <br><span style="font-size:32px; color:#cbd5e1;">(藍綠藻)</span></h3>
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 20px;">正確分類</p>
+                <div class="final-answer">
+                    原核生物界
+                </div>
+            </div>
+            <div>
+                <div class="image-wrapper"><img src="https://www.paludarium.net/uploads/4/4/1/8/4418601/205009762.jpg" alt="Cyanobacteria"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Q3 ================= -->
+<div class="slide-container" id="slide6">
+    <h2 class="slide-title">第 3 題</h2>
+    <div class="content-area">
+        <div class="bullet-list">
+            <ul>
+                <li>
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索一：得 5 分】</strong>
+                    <p class="bullet-text">我是脊椎動物，我能在天空中飛翔，而且我「可以靠自己維持體溫」。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索二：得 3 分】</strong>
+                    <p class="bullet-text">雖然我會飛，但我沒有羽毛，也沒有氣囊輔助呼吸，我的體表長滿了「毛」。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索三：得 1 分】</strong>
+                    <p class="bullet-text">身為「內溫動物」，我是「胎生」的，而且母體會分泌「乳汁」來哺育幼體。</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide7">
+    <h2 class="slide-title">🎯 答案揭曉</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="answer-box">
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
+                <h3 class="target-name">蝙蝠</h3>
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
+                <div class="final-answer">
+                    <span style="font-size: 30px; opacity: 0.9;">動物界</span><br>
+                    ➔ 哺乳類
+                </div>
+            </div>
+            <div>
+                <div class="image-wrapper"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTipkUz-Oj0-qv8mt6Ta5Fxr4iqtxGmvlewfA&s" alt="Bat"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Q4 ================= -->
+<div class="slide-container" id="slide8">
+    <h2 class="slide-title">第 4 題</h2>
+    <div class="content-area">
+        <div class="bullet-list">
+            <ul>
+                <li>
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索一：得 5 分】</strong>
+                    <p class="bullet-text">我是脊椎動物，我「需要靠外界環境來調節體溫」（例如躲到陰暗潮濕的地方）。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索二：得 3 分】</strong>
+                    <p class="bullet-text">我的名字裡雖然有個「魚」字，外型長得像蜥蜴，但我沒有鱗片，皮膚濕潤且裸露。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索三：得 1 分】</strong>
+                    <p class="bullet-text">作為典型的「外溫動物」，我必須在水中產卵(體外受精)，幼體用「鰓」呼吸，成體用「肺和皮膚」呼吸。</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide9">
+    <h2 class="slide-title">🎯 答案揭曉</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="answer-box">
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
+                <h3 class="target-name">山椒魚</h3>
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
+                <div class="final-answer">
+                    <span style="font-size: 30px; opacity: 0.9;">動物界</span><br>
+                    ➔ 兩生類
+                </div>
+            </div>
+            <div>
+                <div class="image-wrapper"><img src="https://taieol.tw/files/muse_taieol/muse_styles/w1024/mcode/eacbee6a7fcc151721cc2efbb869f29a.jpg?itok=G4JVAlvF" alt="Salamander"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Q5 ================= -->
+<div class="slide-container" id="slide10">
+    <h2 class="slide-title">第 5 題</h2>
+    <div class="content-area">
+        <div class="bullet-list">
+            <ul>
+                <li>
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索一：得 5 分】</strong>
+                    <p class="bullet-text">我是多細胞真核生物，具有「細胞壁」，通常生長在陰暗潮濕的土壤或腐木上。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索二：得 3 分】</strong>
+                    <p class="bullet-text">我「無法」行光合作用，會分泌酵素到體外分解養分並吸收，我是生態系中的「分解者」。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索三：得 1 分】</strong>
+                    <p class="bullet-text">我的身體是由許多<strong>「菌絲」</strong>構成，繁殖期會長出像<strong>「小傘」</strong>一樣的構造來散布孢子。</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide11">
+    <h2 class="slide-title">🎯 答案揭曉</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="answer-box">
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
+                <h3 class="target-name">香菇 / 靈芝 <br><span style="font-size:32px; color:#cbd5e1;">(蕈類)</span></h3>
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 20px;">正確分類</p>
+                <div class="final-answer">
+                    真菌界
+                </div>
+            </div>
+            <div>
+                <div class="image-wrapper"><img src="https://as.chdev.tw/web/article/e/d/4/e5174d8e-d28a-4c6e-ad01-996c683c2adb1625467930.jpg" alt="Mushroom"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Q6 ================= -->
+<div class="slide-container" id="slide12">
+    <h2 class="slide-title">第 6 題</h2>
+    <div class="content-area">
+        <div class="bullet-list">
+            <ul>
+                <li>
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索一：得 5 分】</strong>
+                    <p class="bullet-text">我是脊椎動物，我一輩子都生活在水中，外型呈現流線型，有類似鰭的構造。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索二：得 3 分】</strong>
+                    <p class="bullet-text">雖然我住在海裡，但我「沒有鰓」，我必須定時浮出水面用「肺」呼吸。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索三：得 1 分】</strong>
+                    <p class="bullet-text">我「可以靠自己維持固定的體溫（內溫動物）」，而且我是「胎生」，小寶寶是喝母乳長大的。</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide13">
+    <h2 class="slide-title">🎯 答案揭曉</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="answer-box">
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
+                <h3 class="target-name">鯨魚 / 海豚</h3>
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
+                <div class="final-answer">
+                    <span style="font-size: 30px; opacity: 0.9;">動物界</span><br>
+                    ➔ 哺乳類
+                </div>
+            </div>
+            <div>
+                <div class="image-wrapper"><img src="https://img.natgeomedia.com/userfiles/sm/sm1920_images_A1/15280/2022061450646445.jpg" alt="Whale"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Q7 ================= -->
+<div class="slide-container" id="slide14">
+    <h2 class="slide-title">第 7 題</h2>
+    <div class="content-area">
+        <div class="bullet-list">
+            <ul>
+                <li>
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索一：得 5 分】</strong>
+                    <p class="bullet-text">我是大型多細胞生物，我有細胞壁，也有葉綠體可以行光合作用。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索二：得 3 分】</strong>
+                    <p class="bullet-text">我生活在水中，長得很像植物，但其實我沒有真正的「根、莖、葉」構造分化。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索三：得 1 分】</strong>
+                    <p class="bullet-text">因為缺乏器官分化與維管束，所以在五界分類中，我被踢出植物界，歸類在另一個界。</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide15">
+    <h2 class="slide-title">🎯 答案揭曉</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="answer-box">
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
+                <h3 class="target-name">昆布 / 海帶</h3>
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
+                <div class="final-answer">
+                    <span style="font-size: 30px; opacity: 0.9;">原生生物界</span><br>
+                    ➔ 原生藻類
+                </div>
+            </div>
+            <div>
+                <div class="image-wrapper"><img src="https://d3h1lg3ksw6i6b.cloudfront.net/media/image/2022/02/21/a5ac863b1a29472ea8d800f6e2f8f6f1_01_Hero+image_shutterstock_1340882777.jpg" alt="Kelp"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Q8 ================= -->
+<div class="slide-container" id="slide16">
+    <h2 class="slide-title">第 8 題</h2>
+    <div class="content-area">
+        <div class="bullet-list">
+            <ul>
+                <li>
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索一：得 5 分】</strong>
+                    <p class="bullet-text">我是脊椎動物，我「可以靠自己維持體溫」，體表有毛。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索二：得 3 分】</strong>
+                    <p class="bullet-text">雖然我有毛又是「內溫動物」，但我非常特別，我是「卵生」動物，會產下有殼的卵。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索三：得 1 分】</strong>
+                    <p class="bullet-text">小寶寶孵化後，母體會分泌「乳汁」來哺育幼體，所以我還是屬於哺乳類。</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide17">
+    <h2 class="slide-title">🎯 答案揭曉</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="answer-box">
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
+                <h3 class="target-name">鴨嘴獸</h3>
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
+                <div class="final-answer">
+                    <span style="font-size: 30px; opacity: 0.9;">動物界</span><br>
+                    ➔ 哺乳類
+                </div>
+            </div>
+            <div>
+                <div class="image-wrapper"><img src="https://substackcdn.com/image/fetch/$s_!FEun!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F183c222e-9607-484d-bb69-abf49e875141_640x480.png" alt="Platypus"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Q9 ================= -->
+<div class="slide-container" id="slide18">
+    <h2 class="slide-title">第 9 題</h2>
+    <div class="content-area">
+        <div class="bullet-list">
+            <ul>
+                <li>
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索一：得 5 分】</strong>
+                    <p class="bullet-text">我是多細胞生物，我有細胞壁、葉綠體，且具備「維管束」構造。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索二：得 3 分】</strong>
+                    <p class="bullet-text">我不使用孢子繁殖，我會產生「種子」來繁衍下一代。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索三：得 1 分】</strong>
+                    <p class="bullet-text">我的種子裸露在外，沒有果實保護，因為我「不會開花」，但我有毬果。</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide19">
+    <h2 class="slide-title">🎯 答案揭曉</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="answer-box">
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
+                <h3 class="target-name">松 / 杉 / 柏</h3>
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
+                <div class="final-answer">
+                    <span style="font-size: 30px; opacity: 0.9;">植物界</span><br>
+                    ➔ 裸子植物
+                </div>
+            </div>
+            <div>
+                <div class="image-wrapper"><img src="https://www.newsmarket.com.tw/files/2020/12/%E7%B4%85%E6%AA%9C%E7%9A%84%E6%AF%AC%E6%9E%9C%E7%85%A7%E7%89%87%E6%8F%90%E4%BE%9B%EF%BC%8F%E9%99%B3%E5%BB%BA%E5%B8%86.jpg" alt="Pinecones"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= Q10 ================= -->
+<div class="slide-container" id="slide20">
+    <h2 class="slide-title">第 10 題</h2>
+    <div class="content-area">
+        <div class="bullet-list">
+            <ul>
+                <li>
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索一：得 5 分】</strong>
+                    <p class="bullet-text">我是單細胞生物，我有真正的「細胞核」。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索二：得 3 分】</strong>
+                    <p class="bullet-text">我具有雙重身分！我體內有「葉綠體」可以行光合作用像植物，但我「沒有細胞壁」。</p>
+                </li>
+                <li class="fragment">
+                    <i class="fa-solid fa-coins"></i>
+                    <strong>【線索三：得 1 分】</strong>
+                    <p class="bullet-text">此外，我還具有鞭毛，可以像動物一樣自由運動，我是標準的單細胞真核生物代表。</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="slide-container" id="slide21">
+    <h2 class="slide-title">🎯 答案揭曉</h2>
+    <div class="content-area">
+        <div class="two-column">
+            <div class="answer-box">
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
+                <h3 class="target-name">眼蟲</h3>
+                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
+                <div class="final-answer">
+                    原生生物界
+                </div>
+            </div>
+            <div>
+                <div class="image-wrapper"><img src="https://image1.gamme.com.tw/news2/2013/88/13/p6CSnqSdk6WX.jpg" alt="Euglena"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 簡報換頁控制腳本 -->
+<script>
+    let currentSlideIndex = 0;
+    const slides = document.querySelectorAll('.slide-container');
+
+    function updateView() {
+        slides.forEach((slide, index) => {
+            if (index === currentSlideIndex) {
+                slide.classList.add('active');
+            } else {
+                slide.classList.remove('active');
+            }
+        });
+    }
+
+    function advance() {
+        const currentSlide = slides[currentSlideIndex];
+        // 尋找當前頁面中「尚未顯示的線索(fragment)」
+        const hiddenFragments = currentSlide.querySelectorAll('.fragment:not(.visible)');
+
+        if (hiddenFragments.length > 0) {
+            // 如果還有未顯示的線索，就顯示下一個
+            hiddenFragments[0].classList.add('visible');
+        } else {
+            // 如果線索都顯示完了，就切換到下一頁
+            if (currentSlideIndex < slides.length - 1) {
+                currentSlideIndex++;
+                updateView();
+            }
+        }
+    }
+
+    function goBack() {
+        const currentSlide = slides[currentSlideIndex];
+        // 尋找當前頁面中「已顯示的線索(fragment)」
+        const visibleFragments = currentSlide.querySelectorAll('.fragment.visible');
+
+        if (visibleFragments.length > 0) {
+            // 如果有已顯示的線索，就隱藏最後一個
+            visibleFragments[visibleFragments.length - 1].classList.remove('visible');
+        } else {
+            // 退回上一頁，並將上一頁的線索全部顯示出來
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                updateView();
+                const prevSlide = slides[currentSlideIndex];
+                prevSlide.querySelectorAll('.fragment').forEach(f => f.classList.add('visible'));
+            }
+        }
+    }
+
+    // 支援鍵盤翻頁
+    document.addEventListener('keydown', (e) => {
+        if (['ArrowRight', 'Space', 'Enter', 'PageDown'].includes(e.code) || e.key === ' ') {
+            e.preventDefault();
+            advance();
+        } else if (['ArrowLeft', 'PageUp'].includes(e.code)) {
+            e.preventDefault();
+            goBack();
+        }
+    });
+
+    // 支援滑鼠點擊任意處翻頁
+    document.addEventListener('click', () => {
+        advance();
+    });
+
+    // 初始化第一頁
+    updateView();
+</script>
+
+</body>
+</html>
