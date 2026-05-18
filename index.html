@@ -1,880 +1,924 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>猜猜我是誰：五界大探索</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        /* 1. THE SETUP - 全螢幕簡報模式 */
-        * {
-            box-sizing: border-box;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>猜猜我是誰：五界大探索</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f0e8; --bg2:#ede7d9; --bg3:#e4dccb; --card:#faf7f2;
+  --border:#d4c9b0; --border2:#c2b49a;
+  --ink:#2d2318; --ink2:#5c4a32; --ink3:#8c7355; --ink4:#b09470;
+  --moss:#5a6e45; --moss-l:#d4dfc8; --moss-ll:#eef2e8;
+  --sienna:#8b4a2b; --sienna-l:#e8d0c4; --sienna-ll:#f7ede8;
+  --gold:#c8830a; --gold-l:#f0deb0; --gold-ll:#fdf5e0;
+  --taupe:#7a6a58;
+  --r:14px; --r2:20px;
+  --shadow:0 2px 12px rgba(45,35,24,0.10);
+  --shadow2:0 6px 24px rgba(45,35,24,0.15);
+  --tr:all 0.28s cubic-bezier(0.34,1.2,0.64,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);font-family:'Noto Sans TC',sans-serif;color:var(--ink);
+  display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(circle at 20% 20%,rgba(90,110,69,0.07) 0%,transparent 50%),
+             radial-gradient(circle at 80% 80%,rgba(139,74,43,0.06) 0%,transparent 50%);
+}
+#app{width:min(1280px,100vw);height:100dvh;max-height:720px;position:relative;z-index:1;overflow:hidden;}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;animation:fadeUp 0.35s ease forwards;}
+.screen.active{display:flex}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
-        p {
-            margin: 0;
-            margin-bottom: 15px;
-        }
+/* ── SHARED COMPONENTS ── */
+.tag{display:inline-flex;align-items:center;padding:6px 14px;border-radius:var(--r);font-size:clamp(10px,1.2vw,13px);font-weight:700;letter-spacing:1px;}
+.tag-moss{background:var(--moss-ll);border:1.5px solid var(--moss-l);color:var(--moss);}
+.tag-gold{background:var(--gold-ll);border:1.5px solid var(--gold-l);color:var(--gold);}
+.tag-sienna{background:var(--sienna-ll);border:1.5px solid var(--sienna-l);color:var(--sienna);}
+.tag-neutral{background:var(--bg2);border:1.5px solid var(--border);color:var(--ink3);}
+.divider{width:100%;height:1.5px;background:var(--border);flex-shrink:0;}
 
-        body {
-            background-color: #0f172a; /* 簡報外圍全黑背景 */
-            margin: 0;
-            height: 100vh;
-            width: 100vw;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden; /* 隱藏卷軸，變成真正的單頁簡報 */
-            font-family: 'Noto Sans TC', 'Lato', sans-serif;
-            cursor: pointer; /* 讓滑鼠變成手指，提示可以點擊 */
-        }
+/* ════════════════════════════════
+   MODE SELECT SCREEN
+════════════════════════════════ */
+#screen-mode{
+  align-items:center;justify-content:center;gap:clamp(14px,2.5vh,28px);
+  padding:clamp(20px,4vw,60px);
+}
+.mode-logo{display:flex;align-items:center;gap:10px;}
+.mode-logo-text{font-size:clamp(11px,1.4vw,14px);letter-spacing:4px;color:var(--moss);font-weight:700;text-transform:uppercase;}
+.mode-title{font-family:'Noto Serif TC',serif;font-size:clamp(32px,5.5vw,58px);font-weight:900;text-align:center;line-height:1.05;color:var(--ink);}
+.mode-title span{color:var(--moss);}
+.mode-sub{font-size:clamp(13px,1.6vw,18px);color:var(--ink3);text-align:center;}
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:clamp(14px,2vw,24px);width:100%;max-width:880px;}
+@media(max-width:560px){.mode-cards{grid-template-columns:1fr;}}
+.mode-card{
+  background:var(--card);border:2px solid var(--border);border-radius:var(--r2);
+  padding:clamp(22px,3vw,36px);cursor:pointer;transition:var(--tr);
+  display:flex;flex-direction:column;gap:12px;text-align:left;
+  box-shadow:var(--shadow);
+}
+.mode-card:hover{border-color:var(--moss);box-shadow:var(--shadow2);transform:translateY(-3px);}
+.mode-card.sel{border-color:var(--moss);background:var(--moss-ll);box-shadow:0 0 0 3px rgba(90,110,69,0.15);}
+.mode-icon{font-size:clamp(32px,4vw,48px);}
+.mode-card-title{font-family:'Noto Serif TC',serif;font-size:clamp(18px,2.4vw,26px);font-weight:900;color:var(--ink);}
+.mode-card-desc{font-size:clamp(12px,1.4vw,15px);color:var(--ink3);line-height:1.7;}
+.mode-card-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+.mode-next-btn{
+  padding:clamp(14px,2vh,18px) clamp(40px,6vw,64px);
+  background:var(--moss);color:#fff;
+  font-size:clamp(15px,2vw,20px);font-weight:700;font-family:'Noto Serif TC',serif;
+  border:none;border-radius:var(--r2);cursor:pointer;transition:var(--tr);
+  box-shadow:0 4px 18px rgba(90,110,69,0.32);letter-spacing:1px;
+}
+.mode-next-btn:hover{transform:translateY(-3px);box-shadow:0 8px 26px rgba(90,110,69,0.38);}
+.mode-next-btn:active{transform:scale(0.98);}
 
-        /* 2. SLIDE CONTAINER */
-        .slide-container {
-            display: none; /* 預設全部隱藏，靠 JS 控制 */
-            align-items: flex-start;
-            background: radial-gradient(circle at top right, #1e293b, #0f172a);
-            border-radius: 12px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
-            flex-direction: column;
-            height: 720px;
-            justify-content: flex-start;
-            overflow: hidden;
-            padding: 50px 60px;
-            position: absolute;
-            width: 1280px;
-            border: 1px solid #475569;
-            animation: fadeIn 0.4s ease-out;
-        }
+/* ════════════════════════════════
+   SETUP SCREEN
+════════════════════════════════ */
+#screen-setup{
+  padding:clamp(16px,3vw,44px) clamp(16px,4vw,56px);
+  align-items:center;justify-content:center;gap:clamp(10px,1.8vh,20px);overflow-y:auto;
+}
+.setup-back{
+  position:absolute;top:clamp(12px,2vw,22px);left:clamp(12px,2vw,22px);
+  background:var(--bg2);border:1.5px solid var(--border);border-radius:var(--r);
+  padding:8px 16px;font-size:clamp(11px,1.3vw,14px);color:var(--ink3);cursor:pointer;
+  font-family:'Noto Sans TC',sans-serif;transition:var(--tr);
+}
+.setup-back:hover{border-color:var(--border2);color:var(--ink);}
+.setup-mode-badge{font-size:clamp(11px,1.3vw,14px);color:var(--moss);font-weight:700;text-align:center;}
+.setup-title{font-family:'Noto Serif TC',serif;font-size:clamp(24px,3.5vw,38px);font-weight:900;text-align:center;color:var(--ink);}
+.setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:clamp(10px,1.8vw,20px);width:100%;max-width:1100px;}
+.setup-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r2);padding:clamp(16px,2.5vw,28px);box-shadow:var(--shadow);}
+.setup-card-title{font-size:clamp(10px,1.2vw,12px);letter-spacing:3px;color:var(--ink4);text-transform:uppercase;margin-bottom:clamp(10px,1.5vh,16px);font-weight:700;}
+.kingdom-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(6px,1vw,10px);}
+@media(max-width:600px){.kingdom-grid{grid-template-columns:repeat(3,1fr);}}
+.kcard{
+  border:2px solid var(--border);border-radius:var(--r);padding:clamp(8px,1.5vw,14px) 6px;
+  text-align:center;cursor:pointer;background:var(--bg);transition:var(--tr);position:relative;user-select:none;
+}
+.kcard:hover{border-color:var(--moss);background:var(--moss-ll);}
+.kcard.sel{background:var(--moss-ll);border-color:var(--moss);box-shadow:0 0 0 3px rgba(90,110,69,0.15);}
+.k-icon{font-size:clamp(18px,2.5vw,26px);display:block;margin-bottom:4px;}
+.k-name{font-size:clamp(9px,1.1vw,12px);font-weight:700;color:var(--ink);margin-bottom:2px;line-height:1.2;}
+.k-sub{font-size:clamp(8px,0.9vw,10px);color:var(--ink4);}
+.k-check{position:absolute;top:5px;right:5px;width:16px;height:16px;border-radius:50%;background:var(--moss);display:none;align-items:center;justify-content:center;font-size:9px;color:#fff;}
+.kcard.sel .k-check{display:flex;}
+.cnt-row{display:flex;gap:8px;flex-wrap:wrap;}
+.cnt-btn{
+  flex:1;min-width:clamp(40px,8vw,60px);padding:clamp(8px,1.5vh,12px) 8px;
+  border:2px solid var(--border);border-radius:var(--r);background:var(--bg);
+  color:var(--ink3);font-size:clamp(15px,2vw,20px);font-weight:700;cursor:pointer;
+  transition:var(--tr);font-family:'Noto Sans TC',sans-serif;
+}
+.cnt-btn:hover{border-color:var(--moss);color:var(--moss);}
+.cnt-btn.sel{background:var(--moss-ll);border-color:var(--moss);color:var(--moss);box-shadow:0 0 0 3px rgba(90,110,69,0.12);}
+.count-note{font-size:clamp(10px,1.2vw,13px);color:var(--ink4);margin-top:10px;}
+.score-rules{display:flex;flex-direction:column;gap:8px;}
+.srule{display:flex;align-items:center;gap:12px;padding:clamp(10px,1.5vh,14px) 16px;border-radius:var(--r);background:var(--bg);border:1px solid var(--border);}
+.srule-desc{font-size:clamp(12px,1.4vw,14px);color:var(--ink2);flex:1;}
+.srule-desc b{font-weight:700;color:var(--ink);}
+.srule-pts{font-size:clamp(16px,2vw,22px);font-weight:900;margin-left:auto;}
+.format-box{margin-top:10px;padding:12px 16px;border-radius:var(--r);background:var(--moss-ll);border:1px solid var(--moss-l);font-size:clamp(11px,1.3vw,13px);color:var(--ink2);line-height:1.8;}
+.format-box b{color:var(--moss);font-weight:700;}
+.start-btn{
+  padding:clamp(14px,2vh,18px) clamp(32px,5vw,56px);background:var(--moss);color:#fff;
+  font-size:clamp(15px,2vw,20px);font-weight:700;border:none;border-radius:var(--r2);
+  cursor:pointer;transition:var(--tr);font-family:'Noto Serif TC',serif;
+  box-shadow:0 4px 20px rgba(90,110,69,0.35);letter-spacing:1px;
+}
+.start-btn:hover{transform:translateY(-3px);box-shadow:0 8px 28px rgba(90,110,69,0.40);}
+.start-btn:disabled{opacity:0.35;cursor:not-allowed;transform:none;}
 
-        .slide-container.active {
-            display: flex; /* 只顯示當前的投影片 */
-        }
+/* ════════════════════════════════
+   QUESTION SCREEN
+════════════════════════════════ */
+#screen-question{padding:clamp(14px,2.5vw,36px) clamp(14px,3vw,48px);gap:clamp(8px,1.2vh,12px);}
+.q-header{display:flex;align-items:center;gap:clamp(6px,1vw,12px);flex-wrap:wrap;flex-shrink:0;}
+.q-progress-info{font-size:clamp(10px,1.2vw,13px);color:var(--ink4);}
+.q-score-tag{margin-left:auto;}
+.progress-wrap{width:100%;height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;flex-shrink:0;}
+.progress-fill{height:100%;background:var(--moss);border-radius:3px;transition:width 0.5s ease;}
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.98); }
-            to { opacity: 1; transform: scale(1); }
-        }
+/* Timer — only shown in self-challenge mode */
+.timer-row{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.timer-label{font-size:clamp(10px,1.2vw,13px);color:var(--ink4);white-space:nowrap;}
+.timer-track{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;}
+.timer-fill{height:100%;border-radius:4px;transition:width 1s linear,background-color 1s;background:var(--moss);}
+.timer-num{font-size:clamp(16px,2vw,22px);font-weight:900;min-width:32px;text-align:right;transition:color 0.3s;}
 
-        /* Subtle glowing background design */
-        .slide-container::before {
-            content: '';
-            position: absolute;
-            top: -150px;
-            right: -100px;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(34,197,94,0.08) 0%, rgba(0,0,0,0) 70%);
-            border-radius: 50%;
-            z-index: 0;
-            pointer-events: none;
-        }
+.clues-wrap{flex:1;display:flex;flex-direction:column;gap:clamp(8px,1.2vh,12px);min-height:0;overflow:hidden;}
+.clue-card{
+  flex:1;min-height:0;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r2);
+  padding:clamp(14px,2vw,22px) clamp(14px,2vw,24px) clamp(14px,2vw,22px) clamp(56px,7vw,76px);
+  position:relative;border-left:5px solid var(--border2);
+  display:flex;flex-direction:column;justify-content:center;box-shadow:var(--shadow);
+  transition:all 0.35s cubic-bezier(0.22,1,0.36,1);
+}
+.clue-card[data-c="1"]{border-left-color:var(--gold);}
+.clue-card[data-c="2"]{border-left-color:var(--taupe);}
+.clue-card[data-c="3"]{border-left-color:var(--sienna);}
+.clue-card.hidden{opacity:0;transform:translateY(10px);pointer-events:none;flex:0;min-height:0;padding:0;border:none;margin:0;}
+.clue-card.visible{opacity:1;transform:translateY(0);}
+.clue-num-icon{
+  position:absolute;left:clamp(12px,2vw,20px);top:50%;transform:translateY(-50%);
+  width:clamp(30px,3.5vw,40px);height:clamp(30px,3.5vw,40px);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;font-size:clamp(13px,1.6vw,17px);font-weight:900;
+}
+.clue-card[data-c="1"] .clue-num-icon{background:var(--gold-ll);color:var(--gold);}
+.clue-card[data-c="2"] .clue-num-icon{background:var(--bg2);color:var(--taupe);}
+.clue-card[data-c="3"] .clue-num-icon{background:var(--sienna-ll);color:var(--sienna);}
+.clue-label{font-size:clamp(9px,1vw,11px);letter-spacing:2px;text-transform:uppercase;margin-bottom:clamp(5px,0.8vh,8px);display:flex;align-items:center;gap:8px;}
+.clue-card[data-c="1"] .clue-label{color:var(--gold);}
+.clue-card[data-c="2"] .clue-label{color:var(--taupe);}
+.clue-card[data-c="3"] .clue-label{color:var(--sienna);}
+.pts-pill{padding:2px 8px;border-radius:20px;font-size:clamp(9px,1vw,11px);font-weight:700;}
+.clue-card[data-c="1"] .pts-pill{background:var(--gold-ll);color:var(--gold);}
+.clue-card[data-c="2"] .pts-pill{background:var(--bg2);color:var(--taupe);}
+.clue-card[data-c="3"] .pts-pill{background:var(--sienna-ll);color:var(--sienna);}
+.clue-text{font-size:clamp(14px,1.8vw,21px);color:var(--ink2);line-height:1.65;}
+.clue-text b,.clue-text strong{color:var(--moss);font-weight:700;}
 
-        .slide-container::after {
-            content: '';
-            position: absolute;
-            bottom: -200px;
-            left: -150px;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(56,189,248,0.06) 0%, rgba(0,0,0,0) 70%);
-            border-radius: 50%;
-            z-index: 0;
-            pointer-events: none;
-        }
+/* class mode: teacher controls */
+.teacher-bar{
+  display:flex;gap:10px;align-items:center;flex-shrink:0;flex-wrap:wrap;
+  background:var(--gold-ll);border:1.5px solid var(--gold-l);border-radius:var(--r2);
+  padding:clamp(10px,1.5vh,14px) clamp(14px,2vw,20px);
+}
+.teacher-label{font-size:clamp(11px,1.3vw,14px);color:var(--gold);font-weight:700;flex:1;}
+/* pts buttons for teacher scoring */
+.pts-btn{
+  padding:clamp(8px,1.2vh,12px) clamp(12px,1.8vw,20px);
+  border:2px solid var(--border);border-radius:var(--r);
+  background:var(--card);color:var(--ink3);
+  font-size:clamp(13px,1.5vw,16px);font-weight:700;cursor:pointer;
+  font-family:'Noto Sans TC',sans-serif;transition:var(--tr);
+}
+.pts-btn:hover{border-color:var(--moss);color:var(--moss);background:var(--moss-ll);}
+.pts-btn.gold-btn{border-color:var(--gold);color:var(--gold);background:var(--gold-ll);}
+.pts-btn.taupe-btn{border-color:var(--taupe);color:var(--taupe);}
+.pts-btn.sienna-btn{border-color:var(--sienna);color:var(--sienna);}
+.pts-btn.zero-btn{color:var(--ink4);}
 
-        .slide-container > * {
-            position: relative;
-            z-index: 1;
-        }
+.action-row{display:flex;gap:10px;align-items:center;flex-shrink:0;flex-wrap:wrap;}
+.btn-next{
+  flex:1;min-width:180px;padding:clamp(12px,1.8vh,16px);
+  background:var(--moss);color:#fff;font-size:clamp(14px,1.7vw,17px);font-weight:700;
+  border:none;border-radius:var(--r2);cursor:pointer;font-family:'Noto Sans TC',sans-serif;
+  transition:var(--tr);box-shadow:0 3px 14px rgba(90,110,69,0.3);
+}
+.btn-next:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(90,110,69,0.38);}
+.btn-next:active{transform:scale(0.98);}
+.btn-ans{
+  padding:clamp(12px,1.8vh,16px) clamp(16px,2vw,24px);
+  background:var(--bg2);border:1.5px solid var(--border2);color:var(--ink3);
+  font-size:clamp(12px,1.4vw,15px);font-weight:700;border-radius:var(--r2);cursor:pointer;
+  font-family:'Noto Sans TC',sans-serif;transition:var(--tr);
+}
+.btn-ans:hover{border-color:var(--sienna);color:var(--sienna);}
 
-        /* 3. TYPOGRAPHY */
-        h1, h2, h3, h4 {
-            margin: 0;
-            font-family: 'Noto Sans TC', sans-serif;
-        }
+/* ════════════════════════════════
+   ANSWER SCREEN  (no image)
+════════════════════════════════ */
+#screen-answer{
+  padding:clamp(14px,2.5vw,40px) clamp(14px,3vw,52px);
+  gap:clamp(10px,1.5vh,18px);
+  justify-content:center;
+}
+.ans-header{display:flex;align-items:center;gap:10px;padding-bottom:clamp(10px,1.5vh,14px);border-bottom:1.5px solid var(--border);flex-shrink:0;}
+.ans-q-info{font-size:clamp(11px,1.3vw,14px);color:var(--ink4);margin-left:auto;}
+.ans-main{display:flex;gap:clamp(16px,3vw,40px);align-items:flex-start;flex-wrap:wrap;}
+.ans-left{flex:1;min-width:260px;display:flex;flex-direction:column;gap:clamp(10px,1.5vh,16px);}
+.ans-name{font-family:'Noto Serif TC',serif;font-size:clamp(38px,5.5vw,64px);font-weight:900;color:var(--sienna);line-height:1.05;}
+.ans-sub{font-size:clamp(13px,1.6vw,18px);color:var(--ink4);margin-top:2px;}
+.classification-box{background:var(--moss-ll);border:1.5px solid var(--moss-l);border-radius:var(--r2);padding:clamp(14px,2vh,22px) clamp(16px,2vw,24px);}
+.cls-label{font-size:clamp(9px,1vw,12px);letter-spacing:2px;color:var(--moss);text-transform:uppercase;margin-bottom:8px;font-weight:700;}
+.cls-value{font-size:clamp(20px,2.8vw,32px);font-weight:900;color:var(--moss);}
+.score-gain-box{background:var(--gold-ll);border:1.5px solid var(--gold-l);border-radius:var(--r2);padding:clamp(12px,1.8vh,18px) clamp(16px,2vw,22px);display:flex;align-items:center;gap:14px;}
+.gain-pts{font-size:clamp(28px,4vw,46px);font-weight:900;color:var(--gold);}
+.gain-label{font-size:clamp(12px,1.4vw,15px);color:var(--ink3);}
+.gain-total{margin-left:auto;font-size:clamp(18px,2.2vw,24px);font-weight:900;color:var(--ink4);}
 
-        .slide-title {
-            font-size: 44px;
-            font-weight: 700;
-            margin-bottom: 30px;
-            text-align: left;
-            width: 100%;
-            color: #38bdf8;
-            border-bottom: 2px solid #334155;
-            padding-bottom: 15px;
-        }
+/* class mode: no score box, just classification */
+.ans-right{flex:1;min-width:260px;display:flex;flex-direction:column;gap:clamp(8px,1.2vh,12px);}
+.mini-clues{display:flex;flex-direction:column;gap:6px;}
+.mini-clue{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r);
+  padding:clamp(8px,1.2vh,12px) 14px;font-size:clamp(11px,1.3vw,14px);color:var(--ink3);
+  border-left:3px solid var(--border2);
+}
+.mini-clue[data-c="1"]{border-left-color:var(--gold);}
+.mini-clue[data-c="2"]{border-left-color:var(--taupe);}
+.mini-clue[data-c="3"]{border-left-color:var(--sienna);}
+.mini-clue b{display:block;font-size:clamp(9px,1vw,11px);letter-spacing:1px;color:var(--ink4);margin-bottom:3px;font-weight:700;}
+.btn-next-q{
+  padding:clamp(14px,2vh,18px);width:100%;background:var(--sienna);color:#fff;
+  font-size:clamp(14px,1.8vw,18px);font-weight:700;border:none;border-radius:var(--r2);cursor:pointer;
+  font-family:'Noto Serif TC',serif;transition:var(--tr);box-shadow:0 4px 18px rgba(139,74,43,0.3);
+}
+.btn-next-q:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(139,74,43,0.38);}
 
-        .content-area {
-            align-items: center;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            justify-content: flex-start;
-            width: 100%;
-        }
+/* ════════════════════════════════
+   SCOREBOARD SCREEN
+════════════════════════════════ */
+#screen-board{padding:clamp(16px,2.5vw,40px) clamp(16px,3vw,52px);align-items:center;justify-content:center;gap:clamp(10px,1.5vh,18px);}
+.board-title{font-family:'Noto Serif TC',serif;font-size:clamp(22px,3.5vw,36px);font-weight:900;text-align:center;}
+.board-score-big{font-family:'Noto Serif TC',serif;font-size:clamp(64px,10vw,100px);font-weight:900;color:var(--moss);line-height:1;text-align:center;}
+.board-sub{font-size:clamp(13px,1.6vw,18px);color:var(--ink4);text-align:center;}
+.board-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(8px,1.2vw,14px);width:100%;max-width:800px;}
+@media(max-width:500px){.board-stats{grid-template-columns:repeat(2,1fr);}}
+.bstat{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r2);padding:clamp(12px,2vh,20px);text-align:center;box-shadow:var(--shadow);}
+.bstat-num{font-size:clamp(24px,3.5vw,38px);font-weight:900;margin-bottom:4px;}
+.bstat-label{font-size:clamp(10px,1.2vw,13px);color:var(--ink4);}
+.board-history{width:100%;max-width:800px;background:var(--card);border:1.5px solid var(--border);border-radius:var(--r2);overflow:hidden;max-height:clamp(130px,25vh,200px);overflow-y:auto;box-shadow:var(--shadow);}
+.board-history::-webkit-scrollbar{width:4px;}
+.board-history::-webkit-scrollbar-track{background:var(--bg2);}
+.board-history::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.hrow{display:flex;align-items:center;gap:12px;padding:clamp(8px,1.2vh,12px) clamp(14px,2vw,20px);border-bottom:1px solid var(--border);font-size:clamp(11px,1.3vw,14px);}
+.hrow:last-child{border-bottom:none;}
+.h-n{width:24px;color:var(--ink4);font-weight:700;}
+.h-name{flex:1;color:var(--ink);font-weight:700;}
+.h-k{color:var(--ink4);font-size:clamp(9px,1vw,11px);background:var(--bg2);padding:2px 8px;border-radius:20px;white-space:nowrap;}
+.h-pts{font-weight:900;min-width:50px;text-align:right;}
+.hp5{color:var(--gold);} .hp3{color:var(--taupe);} .hp1{color:var(--sienna);} .hp0{color:var(--ink4);}
+.board-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+.btn-continue{
+  padding:clamp(12px,1.8vh,16px) clamp(32px,5vw,52px);background:var(--moss);color:#fff;
+  font-size:clamp(14px,1.8vw,18px);font-weight:700;border:none;border-radius:var(--r2);cursor:pointer;
+  font-family:'Noto Serif TC',serif;transition:var(--tr);box-shadow:0 4px 18px rgba(90,110,69,0.3);
+}
+.btn-continue:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(90,110,69,0.38);}
+.btn-restart{
+  padding:clamp(12px,1.8vh,16px) clamp(24px,3.5vw,36px);background:var(--bg2);border:1.5px solid var(--border2);
+  color:var(--ink3);font-size:clamp(13px,1.6vw,16px);font-weight:700;border-radius:var(--r2);cursor:pointer;
+  font-family:'Noto Sans TC',sans-serif;transition:var(--tr);
+}
+.btn-restart:hover{border-color:var(--sienna);color:var(--sienna);}
 
-        .slide1-content-area {
-            align-items: center;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            justify-content: center;
-            width: 100%;
-        }
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:clamp(16px,3vh,30px);left:50%;transform:translateX(-50%) translateY(60px);
+  background:var(--ink);color:#fff;padding:10px 22px;border-radius:30px;
+  font-size:clamp(12px,1.4vw,15px);font-weight:500;opacity:0;transition:all 0.3s;pointer-events:none;
+  white-space:nowrap;z-index:999;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-        /* 4. LAYOUTS */
-        .two-column {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 50px;
-            width: 100%;
-            align-items: center;
-        }
+/* ── PARTICLES ── */
+.particle{position:fixed;pointer-events:none;z-index:999;border-radius:50%;animation:burst 0.8s ease-out forwards;}
+@keyframes burst{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
 
-        .two-column.tiled {
-            align-items: stretch;
-            height: 100%;
-            padding-top: 10px;
-        }
-
-        .two-column.tiled > div {
-            background-color: rgba(30, 41, 59, 0.7);
-            border-radius: 20px;
-            border: 1px solid #475569;
-            padding: 40px;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .two-column.tiled h3 {
-            color: #f8fafc;
-            font-size: 36px;
-            margin-bottom: 24px;
-            border-bottom: 2px dashed #475569;
-            padding-bottom: 15px;
-        }
-
-        /* Bullet Points for Clues */
-        .bullet-list {
-            width: 100%;
-            max-width: 1100px;
-            margin-top: 0px;
-        }
-
-        .bullet-list ul {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 25px;
-        }
-
-        .bullet-list li {
-            background-color: rgba(30, 41, 59, 0.8);
-            border-radius: 16px;
-            padding: 24px 30px 24px 85px;
-            position: relative;
-            border-left: 8px solid #475569;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            height: 130px; /* 固定高度防止跑版 */
-        }
-
-        /* Icons for Points */
-        .bullet-list i {
-            position: absolute;
-            left: 25px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 32px;
-        }
-
-        .bullet-list li:nth-child(1) { border-left-color: #eab308; }
-        .bullet-list li:nth-child(2) { border-left-color: #94a3b8; }
-        .bullet-list li:nth-child(3) { border-left-color: #b45309; }
-
-        .bullet-list li:nth-child(1) i { color: #eab308; }
-        .bullet-list li:nth-child(2) i { color: #94a3b8; }
-        .bullet-list li:nth-child(3) i { color: #b45309; }
-
-        /* 修正標題的粗體不要影響到內文關鍵字 */
-        .bullet-list li > strong {
-            display: block;
-            font-size: 26px;
-            margin-bottom: 10px;
-            color: #f8fafc;
-        }
-
-        .bullet-text {
-            font-size: 24px;
-            color: #cbd5e1;
-            line-height: 1.6;
-            margin-bottom: 0;
-        }
-        
-        /* 線索內文如果有特別強調的關鍵字 */
-        .bullet-text strong {
-            color: #eab308;
-            font-weight: 700;
-        }
-
-        /* 5. 動畫與片段顯示邏輯 (Fragments) */
-        .fragment {
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(20px);
-            transition: opacity 0.4s ease, transform 0.4s ease, visibility 0.4s;
-        }
-
-        .fragment.visible {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        /* 6. ANSWER SLIDE STYLES */
-        .answer-box {
-            background-color: rgba(30, 41, 59, 0.6);
-            padding: 50px 40px;
-            border-radius: 24px;
-            border: 1px solid #475569;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            text-align: center;
-        }
-
-        .target-name {
-            font-size: 52px;
-            color: #eab308;
-            margin-bottom: 30px;
-            font-weight: 900;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-        }
-
-        .final-answer {
-            background: linear-gradient(135deg, #16a34a, #22c55e);
-            color: #fff;
-            font-weight: 700;
-            padding: 20px 40px;
-            border-radius: 20px;
-            display: inline-block;
-            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
-            font-size: 40px;
-            line-height: 1.4;
-            border: 2px solid #4ade80;
-        }
-
-        .image-wrapper {
-            border-radius: 20px;
-            height: 480px;
-            width: 100%;
-            overflow: hidden;
-            border: 4px solid #334155;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-            background-color: #0f172a;
-        }
-
-        .image-wrapper img {
-            height: 100%;
-            width: 100%;
-            object-fit: cover;
-        }
-
-        /* 提示字樣 */
-        .click-hint {
-            position: absolute;
-            bottom: 20px;
-            width: 100%;
-            text-align: center;
-            color: #64748b;
-            font-size: 18px;
-            letter-spacing: 1px;
-            pointer-events: none;
-        }
-
-        /* Utility classes */
-        .text-gold { color: #eab308; }
-        .text-silver { color: #94a3b8; }
-        .text-bronze { color: #b45309; }
-        .text-red { color: #ef4444; }
-        .text-green { color: #22c55e; }
-        .text-slate { color: #cbd5e1; }
-    </style>
+/* ── CLUE REVEAL ── */
+@keyframes clueReveal{from{opacity:0;transform:translateY(16px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.clue-reveal{animation:clueReveal 0.4s cubic-bezier(0.22,1,0.36,1) forwards;}
+</style>
 </head>
 <body>
+<div id="app">
 
-<!-- Slide 1: Game Rules -->
-<div class="slide-container active" id="slide1">
-    <div class="slide1-content-area">
-        <h2 class="slide-title" style="text-align: center; border: none; font-size: 52px; color: #f8fafc; margin-bottom: 40px;">
-            猜猜我是誰：五界大探索 <span class="text-green">新版遊戲規則</span>
-        </h2>
-        <div class="two-column tiled">
-            <!-- Tile 1: Scoring -->
-            <div>
-                <h3>🏆 計分與流程</h3>
-                <ul style="list-style: none; padding: 0; font-size: 24px; color: #cbd5e1; line-height: 1.8; text-align: left; padding-left: 20px;">
-                    <li><strong class="text-gold">第一段線索蓋牌：</strong> 得 5 分</li>
-                    <li><strong class="text-silver">第二段線索蓋牌：</strong> 得 3 分</li>
-                    <li><strong class="text-bronze">第三段線索蓋牌：</strong> 得 1 分</li>
-                    <li><strong class="text-red">答錯不扣分：</strong> 0 分，鼓勵勇敢挑戰！</li>
-                    <li style="margin-top: 25px; border-top: 1px solid #475569; padding-top: 25px; font-size: 22px;">
-                        每段線索給 <strong style="color:#fff;">10~15 秒</strong>。<br>
-                        老師喊「3,2,1請蓋牌」！蓋牌後無法修改，沒蓋牌可繼續看下一段。
-                    </li>
-                </ul>
-            </div>
-            <!-- Tile 2: Requirements -->
-            <div>
-                <h3>📝 作答要求</h3>
-                <div style="background-color: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 30px; text-align: center; margin-top: 15px; flex-grow: 1;">
-                    <p style="color: #f8fafc; font-size: 26px; font-weight: bold; margin-bottom: 20px;">必須同時寫出：</p>
-                    <p style="font-size: 40px; color: #22c55e; font-weight: 700; margin-bottom: 20px;">「界」 + 「類群」</p>
-                    <p class="text-slate" style="font-size: 22px;">才算完全答對！</p>
-                    <hr style="border: none; border-top: 1px dashed #475569; margin: 25px 0;">
-                    <p class="text-slate" style="font-size: 24px; margin-bottom: 15px;">⭕ 例如：動物界－哺乳類</p>
-                    <p class="text-red" style="font-size: 22px;">❌ 僅寫「動物」或「哺乳類」不給分</p>
-                </div>
-            </div>
-        </div>
+<!-- ══ MODE SELECT ══ -->
+<div class="screen active" id="screen-mode">
+  <div class="mode-logo"><span style="font-size:clamp(20px,2.5vw,28px)">🌿</span><span class="mode-logo-text">生物課互動遊戲</span></div>
+  <h1 class="mode-title">猜猜我是誰<br><span>五界大探索</span></h1>
+  <p class="mode-sub">請先選擇遊戲模式</p>
+  <div class="mode-cards">
+    <div class="mode-card sel" id="card-self" onclick="selectMode('self')">
+      <div class="mode-icon">🧑‍💻</div>
+      <div class="mode-card-title">自行挑戰模式</div>
+      <div class="mode-card-desc">適合個人練習。每段線索有<b>倒數計時</b>，時間到自動顯示下一條；依答題當下看到的線索數自動計分。</div>
+      <div class="mode-card-tags">
+        <span class="tag tag-moss">⏱ 倒數計時</span>
+        <span class="tag tag-gold">⭐ 自動計分</span>
+      </div>
     </div>
-    <div class="click-hint"><i class="fa-solid fa-mouse-pointer"></i> 點擊畫面任意處 或 按下空白鍵 開始遊戲</div>
+    <div class="mode-card" id="card-class" onclick="selectMode('class')">
+      <div class="mode-icon">👨‍🏫</div>
+      <div class="mode-card-title">全班挑戰模式</div>
+      <div class="mode-card-desc">適合課堂投影。老師手動控制線索、自行判斷學生答題後按下對應分數，<b>沒有倒數計時</b>。</div>
+      <div class="mode-card-tags">
+        <span class="tag tag-neutral">🖱 老師操作</span>
+        <span class="tag tag-sienna">✏️ 手動計分</span>
+      </div>
+    </div>
+  </div>
+  <button class="mode-next-btn" onclick="goSetup()">下一步：選擇題目 →</button>
 </div>
 
-<!-- ================= Q1 ================= -->
-<div class="slide-container" id="slide2">
-    <h2 class="slide-title">第 1 題</h2>
-    <div class="content-area">
-        <div class="bullet-list">
-            <ul>
-                <li>
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索一：得 5 分】</strong>
-                    <p class="bullet-text">我是多細胞生物，我的細胞有細胞壁，而且我演化出了「維管束」構造。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索二：得 3 分】</strong>
-                    <p class="bullet-text">雖然我有維管束，但我「不會開花」，也沒有種子，我是靠「孢子」繁殖的。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索三：得 1 分】</strong>
-                    <p class="bullet-text">我的幼葉通常呈現「捲曲狀」，葉片背面常有褐色的孢子囊群。</p>
-                </li>
-            </ul>
+<!-- ══ SETUP ══ -->
+<div class="screen" id="screen-setup">
+  <button class="setup-back" onclick="go('screen-mode')">← 返回</button>
+  <div class="setup-mode-badge" id="setup-mode-badge">🧑‍💻 自行挑戰模式</div>
+  <div class="setup-title">選擇你的挑戰</div>
+
+  <div class="setup-grid">
+    <div class="setup-card">
+      <p class="setup-card-title">🌍 選擇測驗的界（可複選）</p>
+      <div class="kingdom-grid">
+        <div class="kcard sel" data-k="monera" onclick="toggleK(this)">
+          <span class="k-icon">🦠</span><div class="k-name">原核生物界</div><div class="k-sub">細菌・藍綠菌</div><div class="k-check">✓</div>
         </div>
+        <div class="kcard sel" data-k="protista" onclick="toggleK(this)">
+          <span class="k-icon">🔬</span><div class="k-name">原生生物界</div><div class="k-sub">眼蟲・藻類</div><div class="k-check">✓</div>
+        </div>
+        <div class="kcard sel" data-k="fungi" onclick="toggleK(this)">
+          <span class="k-icon">🍄</span><div class="k-name">真菌界</div><div class="k-sub">香菇・黴菌</div><div class="k-check">✓</div>
+        </div>
+        <div class="kcard sel" data-k="plantae" onclick="toggleK(this)">
+          <span class="k-icon">🌿</span><div class="k-name">植物界</div><div class="k-sub">蕨類・裸子・被子</div><div class="k-check">✓</div>
+        </div>
+        <div class="kcard sel" data-k="animalia" onclick="toggleK(this)">
+          <span class="k-icon">🦁</span><div class="k-name">動物界</div><div class="k-sub">哺乳・爬蟲・鳥</div><div class="k-check">✓</div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <p class="setup-card-title" style="margin-bottom:10px">📋 測驗題數</p>
+        <div class="cnt-row">
+          <button class="cnt-btn" onclick="setCount(5,this)">5</button>
+          <button class="cnt-btn" onclick="setCount(8,this)">8</button>
+          <button class="cnt-btn sel" onclick="setCount(10,this)">10</button>
+          <button class="cnt-btn" onclick="setCount(15,this)">15</button>
+          <button class="cnt-btn" onclick="setCount(20,this)">20</button>
+        </div>
+        <p class="count-note" id="count-note">從選定的界中隨機抽取 10 題</p>
+      </div>
     </div>
+    <div class="setup-card">
+      <p class="setup-card-title">🏆 計分規則</p>
+      <div class="score-rules">
+        <div class="srule"><span style="font-size:20px;width:28px;text-align:center">🥇</span><span class="srule-desc"><b>第一條</b>線索後作答</span><span class="srule-pts" style="color:var(--gold)">5 分</span></div>
+        <div class="srule"><span style="font-size:20px;width:28px;text-align:center">🥈</span><span class="srule-desc"><b>第二條</b>線索後作答</span><span class="srule-pts" style="color:var(--taupe)">3 分</span></div>
+        <div class="srule"><span style="font-size:20px;width:28px;text-align:center">🥉</span><span class="srule-desc"><b>第三條</b>線索後作答</span><span class="srule-pts" style="color:var(--sienna)">1 分</span></div>
+        <div class="srule"><span style="font-size:20px;width:28px;text-align:center">❌</span><span class="srule-desc">答錯<b>不扣分</b>，勇敢挑戰！</span><span class="srule-pts" style="color:var(--ink4)">0 分</span></div>
+      </div>
+      <div class="format-box">
+        ✏️ 作答須同時寫出 <b>「界」＋「類群」</b> 才算完整<br>
+        ⭕ 例：<b>動物界 ─ 哺乳類</b>｜❌ 僅寫「動物」不給分
+      </div>
+    </div>
+  </div>
+  <button class="start-btn" onclick="startGame()">開始遊戲 🌱</button>
 </div>
 
-<div class="slide-container" id="slide3">
-    <h2 class="slide-title">🎯 答案揭曉</h2>
-    <div class="content-area">
-        <div class="two-column">
-            <div class="answer-box">
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
-                <h3 class="target-name">蕨類</h3>
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
-                <div class="final-answer">
-                    <span style="font-size: 30px; opacity: 0.9;">植物界</span><br>
-                    ➔ 蕨類
-                </div>
-            </div>
-            <div>
-                <div class="image-wrapper"><img src="https://www.wavehill.org/uploads/plants/_sm/259311/fern-top-image-2022-07-20_140347_wave-hill.jpg" alt="Fern"></div>
-            </div>
-        </div>
+<!-- ══ QUESTION ══ -->
+<div class="screen" id="screen-question">
+  <div class="q-header">
+    <div class="tag tag-moss" id="q-num">第 1 題</div>
+    <div class="tag tag-neutral" id="q-king"></div>
+    <div class="q-progress-info" id="q-prog">1 / 10</div>
+    <div class="tag tag-gold q-score-tag" id="q-score">🍃 0 分</div>
+  </div>
+  <div class="progress-wrap"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
+
+  <!-- Timer row: shown only in self mode -->
+  <div class="timer-row" id="timer-row">
+    <span class="timer-label">倒數計時</span>
+    <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+    <span class="timer-num" id="timer-num">15</span>
+  </div>
+
+  <div class="clues-wrap" id="clues-wrap">
+    <div class="clue-card hidden" data-c="1" id="c1">
+      <div class="clue-num-icon">一</div>
+      <div class="clue-label">線索一 <span class="pts-pill">5 分</span></div>
+      <p class="clue-text" id="c1t"></p>
     </div>
+    <div class="clue-card hidden" data-c="2" id="c2">
+      <div class="clue-num-icon">二</div>
+      <div class="clue-label">線索二 <span class="pts-pill">3 分</span></div>
+      <p class="clue-text" id="c2t"></p>
+    </div>
+    <div class="clue-card hidden" data-c="3" id="c3">
+      <div class="clue-num-icon">三</div>
+      <div class="clue-label">線索三 <span class="pts-pill">1 分</span></div>
+      <p class="clue-text" id="c3t"></p>
+    </div>
+  </div>
+
+  <!-- Self mode controls -->
+  <div class="action-row" id="self-actions">
+    <button class="btn-next" id="btn-next" onclick="nextClue()">顯示線索二 ▼</button>
+    <button class="btn-ans" onclick="revealAnswer(0)">查看答案</button>
+  </div>
+
+  <!-- Class mode controls: teacher scores manually -->
+  <div class="teacher-bar" id="class-actions" style="display:none">
+    <span class="teacher-label">👨‍🏫 老師計分：學生答對，本題得幾分？</span>
+    <button class="pts-btn gold-btn" onclick="revealAnswer(5)">🥇 5分</button>
+    <button class="pts-btn taupe-btn" onclick="revealAnswer(3)">🥈 3分</button>
+    <button class="pts-btn sienna-btn" onclick="revealAnswer(1)">🥉 1分</button>
+    <button class="pts-btn zero-btn" onclick="revealAnswer(0)">❌ 0分</button>
+    <button class="btn-ans" onclick="nextClue()" id="class-next-clue">顯示線索二 ▼</button>
+  </div>
 </div>
 
-<!-- ================= Q2 ================= -->
-<div class="slide-container" id="slide4">
-    <h2 class="slide-title">第 2 題</h2>
-    <div class="content-area">
-        <div class="bullet-list">
-            <ul>
-                <li>
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索一：得 5 分】</strong>
-                    <p class="bullet-text">我可以進行光合作用自己製造養分，我是生態系中的生產者。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索二：得 3 分】</strong>
-                    <p class="bullet-text">我是單細胞或群體生活的生物，請注意，我的細胞內「沒有葉綠體」，但我有葉綠素。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索三：得 1 分】</strong>
-                    <p class="bullet-text">我最大的特徵是細胞內「沒有真正的細胞核 (無核膜)」，我不屬於植物界也不屬於原生生物界。</p>
-                </li>
-            </ul>
+<!-- ══ ANSWER ══ -->
+<div class="screen" id="screen-answer">
+  <div class="ans-header">
+    <div class="tag tag-moss">🎯 答案揭曉</div>
+    <div class="ans-q-info" id="ans-qinfo"></div>
+  </div>
+  <div class="ans-main">
+    <div class="ans-left">
+      <div>
+        <div class="ans-name" id="ans-name"></div>
+        <div class="ans-sub" id="ans-sub"></div>
+      </div>
+      <div class="classification-box">
+        <div class="cls-label">正確分類</div>
+        <div class="cls-value" id="ans-cls"></div>
+      </div>
+      <!-- score box: self mode only -->
+      <div class="score-gain-box" id="ans-score-box">
+        <div>
+          <div class="gain-pts" id="gain-pts">+5 分</div>
+          <div class="gain-label" id="gain-label">第一條線索後作答 🥇</div>
         </div>
+        <div class="gain-total" id="gain-total">累計 0 分</div>
+      </div>
+      <button class="btn-next-q" id="btn-nextq" onclick="nextQ()">下一題 →</button>
     </div>
+    <div class="ans-right">
+      <div class="mini-clues" id="mini-clues"></div>
+    </div>
+  </div>
 </div>
 
-<div class="slide-container" id="slide5">
-    <h2 class="slide-title">🎯 答案揭曉</h2>
-    <div class="content-area">
-        <div class="two-column">
-            <div class="answer-box">
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
-                <h3 class="target-name">藍綠菌 <br><span style="font-size:32px; color:#cbd5e1;">(藍綠藻)</span></h3>
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 20px;">正確分類</p>
-                <div class="final-answer">
-                    原核生物界
-                </div>
-            </div>
-            <div>
-                <div class="image-wrapper"><img src="https://www.paludarium.net/uploads/4/4/1/8/4418601/205009762.jpg" alt="Cyanobacteria"></div>
-            </div>
-        </div>
-    </div>
+<!-- ══ SCOREBOARD ══ -->
+<div class="screen" id="screen-board">
+  <div class="board-title" id="board-title">🏆 遊戲結束！</div>
+  <div class="board-score-big" id="board-score">0</div>
+  <div class="board-sub" id="board-sub"></div>
+  <div class="board-stats" id="board-stats"></div>
+  <div class="board-history" id="board-history"></div>
+  <div class="board-btns" id="board-btns"></div>
 </div>
 
-<!-- ================= Q3 ================= -->
-<div class="slide-container" id="slide6">
-    <h2 class="slide-title">第 3 題</h2>
-    <div class="content-area">
-        <div class="bullet-list">
-            <ul>
-                <li>
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索一：得 5 分】</strong>
-                    <p class="bullet-text">我是脊椎動物，我能在天空中飛翔，而且我「可以靠自己維持體溫」。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索二：得 3 分】</strong>
-                    <p class="bullet-text">雖然我會飛，但我沒有羽毛，也沒有氣囊輔助呼吸，我的體表長滿了「毛」。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索三：得 1 分】</strong>
-                    <p class="bullet-text">身為「內溫動物」，我是「胎生」的，而且母體會分泌「乳汁」來哺育幼體。</p>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
+</div><!-- #app -->
+<div id="toast"></div>
 
-<div class="slide-container" id="slide7">
-    <h2 class="slide-title">🎯 答案揭曉</h2>
-    <div class="content-area">
-        <div class="two-column">
-            <div class="answer-box">
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
-                <h3 class="target-name">蝙蝠</h3>
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
-                <div class="final-answer">
-                    <span style="font-size: 30px; opacity: 0.9;">動物界</span><br>
-                    ➔ 哺乳類
-                </div>
-            </div>
-            <div>
-                <div class="image-wrapper"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTipkUz-Oj0-qv8mt6Ta5Fxr4iqtxGmvlewfA&s" alt="Bat"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ================= Q4 ================= -->
-<div class="slide-container" id="slide8">
-    <h2 class="slide-title">第 4 題</h2>
-    <div class="content-area">
-        <div class="bullet-list">
-            <ul>
-                <li>
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索一：得 5 分】</strong>
-                    <p class="bullet-text">我是脊椎動物，我「需要靠外界環境來調節體溫」（例如躲到陰暗潮濕的地方）。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索二：得 3 分】</strong>
-                    <p class="bullet-text">我的名字裡雖然有個「魚」字，外型長得像蜥蜴，但我沒有鱗片，皮膚濕潤且裸露。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索三：得 1 分】</strong>
-                    <p class="bullet-text">作為典型的「外溫動物」，我必須在水中產卵(體外受精)，幼體用「鰓」呼吸，成體用「肺和皮膚」呼吸。</p>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div class="slide-container" id="slide9">
-    <h2 class="slide-title">🎯 答案揭曉</h2>
-    <div class="content-area">
-        <div class="two-column">
-            <div class="answer-box">
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
-                <h3 class="target-name">山椒魚</h3>
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
-                <div class="final-answer">
-                    <span style="font-size: 30px; opacity: 0.9;">動物界</span><br>
-                    ➔ 兩生類
-                </div>
-            </div>
-            <div>
-                <div class="image-wrapper"><img src="https://taieol.tw/files/muse_taieol/muse_styles/w1024/mcode/eacbee6a7fcc151721cc2efbb869f29a.jpg?itok=G4JVAlvF" alt="Salamander"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ================= Q5 ================= -->
-<div class="slide-container" id="slide10">
-    <h2 class="slide-title">第 5 題</h2>
-    <div class="content-area">
-        <div class="bullet-list">
-            <ul>
-                <li>
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索一：得 5 分】</strong>
-                    <p class="bullet-text">我是多細胞真核生物，具有「細胞壁」，通常生長在陰暗潮濕的土壤或腐木上。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索二：得 3 分】</strong>
-                    <p class="bullet-text">我「無法」行光合作用，會分泌酵素到體外分解養分並吸收，我是生態系中的「分解者」。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索三：得 1 分】</strong>
-                    <p class="bullet-text">我的身體是由許多<strong>「菌絲」</strong>構成，繁殖期會長出像<strong>「小傘」</strong>一樣的構造來散布孢子。</p>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div class="slide-container" id="slide11">
-    <h2 class="slide-title">🎯 答案揭曉</h2>
-    <div class="content-area">
-        <div class="two-column">
-            <div class="answer-box">
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
-                <h3 class="target-name">香菇 / 靈芝 <br><span style="font-size:32px; color:#cbd5e1;">(蕈類)</span></h3>
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 20px;">正確分類</p>
-                <div class="final-answer">
-                    真菌界
-                </div>
-            </div>
-            <div>
-                <div class="image-wrapper"><img src="https://as.chdev.tw/web/article/e/d/4/e5174d8e-d28a-4c6e-ad01-996c683c2adb1625467930.jpg" alt="Mushroom"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ================= Q6 ================= -->
-<div class="slide-container" id="slide12">
-    <h2 class="slide-title">第 6 題</h2>
-    <div class="content-area">
-        <div class="bullet-list">
-            <ul>
-                <li>
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索一：得 5 分】</strong>
-                    <p class="bullet-text">我是脊椎動物，我一輩子都生活在水中，外型呈現流線型，有類似鰭的構造。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索二：得 3 分】</strong>
-                    <p class="bullet-text">雖然我住在海裡，但我「沒有鰓」，我必須定時浮出水面用「肺」呼吸。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索三：得 1 分】</strong>
-                    <p class="bullet-text">我「可以靠自己維持固定的體溫（內溫動物）」，而且我是「胎生」，小寶寶是喝母乳長大的。</p>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div class="slide-container" id="slide13">
-    <h2 class="slide-title">🎯 答案揭曉</h2>
-    <div class="content-area">
-        <div class="two-column">
-            <div class="answer-box">
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
-                <h3 class="target-name">鯨魚 / 海豚</h3>
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
-                <div class="final-answer">
-                    <span style="font-size: 30px; opacity: 0.9;">動物界</span><br>
-                    ➔ 哺乳類
-                </div>
-            </div>
-            <div>
-                <div class="image-wrapper"><img src="https://img.natgeomedia.com/userfiles/sm/sm1920_images_A1/15280/2022061450646445.jpg" alt="Whale"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ================= Q7 ================= -->
-<div class="slide-container" id="slide14">
-    <h2 class="slide-title">第 7 題</h2>
-    <div class="content-area">
-        <div class="bullet-list">
-            <ul>
-                <li>
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索一：得 5 分】</strong>
-                    <p class="bullet-text">我是大型多細胞生物，我有細胞壁，也有葉綠體可以行光合作用。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索二：得 3 分】</strong>
-                    <p class="bullet-text">我生活在水中，長得很像植物，但其實我沒有真正的「根、莖、葉」構造分化。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索三：得 1 分】</strong>
-                    <p class="bullet-text">因為缺乏器官分化與維管束，所以在五界分類中，我被踢出植物界，歸類在另一個界。</p>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div class="slide-container" id="slide15">
-    <h2 class="slide-title">🎯 答案揭曉</h2>
-    <div class="content-area">
-        <div class="two-column">
-            <div class="answer-box">
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
-                <h3 class="target-name">昆布 / 海帶</h3>
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
-                <div class="final-answer">
-                    <span style="font-size: 30px; opacity: 0.9;">原生生物界</span><br>
-                    ➔ 原生藻類
-                </div>
-            </div>
-            <div>
-                <div class="image-wrapper"><img src="https://d3h1lg3ksw6i6b.cloudfront.net/media/image/2022/02/21/a5ac863b1a29472ea8d800f6e2f8f6f1_01_Hero+image_shutterstock_1340882777.jpg" alt="Kelp"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ================= Q8 ================= -->
-<div class="slide-container" id="slide16">
-    <h2 class="slide-title">第 8 題</h2>
-    <div class="content-area">
-        <div class="bullet-list">
-            <ul>
-                <li>
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索一：得 5 分】</strong>
-                    <p class="bullet-text">我是脊椎動物，我「可以靠自己維持體溫」，體表有毛。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索二：得 3 分】</strong>
-                    <p class="bullet-text">雖然我有毛又是「內溫動物」，但我非常特別，我是「卵生」動物，會產下有殼的卵。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索三：得 1 分】</strong>
-                    <p class="bullet-text">小寶寶孵化後，母體會分泌「乳汁」來哺育幼體，所以我還是屬於哺乳類。</p>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div class="slide-container" id="slide17">
-    <h2 class="slide-title">🎯 答案揭曉</h2>
-    <div class="content-area">
-        <div class="two-column">
-            <div class="answer-box">
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
-                <h3 class="target-name">鴨嘴獸</h3>
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
-                <div class="final-answer">
-                    <span style="font-size: 30px; opacity: 0.9;">動物界</span><br>
-                    ➔ 哺乳類
-                </div>
-            </div>
-            <div>
-                <div class="image-wrapper"><img src="https://substackcdn.com/image/fetch/$s_!FEun!,f_auto,q_auto:good,fl_progressive:steep/https%3A%2F%2Fsubstack-post-media.s3.amazonaws.com%2Fpublic%2Fimages%2F183c222e-9607-484d-bb69-abf49e875141_640x480.png" alt="Platypus"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ================= Q9 ================= -->
-<div class="slide-container" id="slide18">
-    <h2 class="slide-title">第 9 題</h2>
-    <div class="content-area">
-        <div class="bullet-list">
-            <ul>
-                <li>
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索一：得 5 分】</strong>
-                    <p class="bullet-text">我是多細胞生物，我有細胞壁、葉綠體，且具備「維管束」構造。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索二：得 3 分】</strong>
-                    <p class="bullet-text">我不使用孢子繁殖，我會產生「種子」來繁衍下一代。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索三：得 1 分】</strong>
-                    <p class="bullet-text">我的種子裸露在外，沒有果實保護，因為我「不會開花」，但我有毬果。</p>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div class="slide-container" id="slide19">
-    <h2 class="slide-title">🎯 答案揭曉</h2>
-    <div class="content-area">
-        <div class="two-column">
-            <div class="answer-box">
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
-                <h3 class="target-name">松 / 杉 / 柏</h3>
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
-                <div class="final-answer">
-                    <span style="font-size: 30px; opacity: 0.9;">植物界</span><br>
-                    ➔ 裸子植物
-                </div>
-            </div>
-            <div>
-                <div class="image-wrapper"><img src="https://www.newsmarket.com.tw/files/2020/12/%E7%B4%85%E6%AA%9C%E7%9A%84%E6%AF%AC%E6%9E%9C%E7%85%A7%E7%89%87%E6%8F%90%E4%BE%9B%EF%BC%8F%E9%99%B3%E5%BB%BA%E5%B8%86.jpg" alt="Pinecones"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ================= Q10 ================= -->
-<div class="slide-container" id="slide20">
-    <h2 class="slide-title">第 10 題</h2>
-    <div class="content-area">
-        <div class="bullet-list">
-            <ul>
-                <li>
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索一：得 5 分】</strong>
-                    <p class="bullet-text">我是單細胞生物，我有真正的「細胞核」。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索二：得 3 分】</strong>
-                    <p class="bullet-text">我具有雙重身分！我體內有「葉綠體」可以行光合作用像植物，但我「沒有細胞壁」。</p>
-                </li>
-                <li class="fragment">
-                    <i class="fa-solid fa-coins"></i>
-                    <strong>【線索三：得 1 分】</strong>
-                    <p class="bullet-text">此外，我還具有鞭毛，可以像動物一樣自由運動，我是標準的單細胞真核生物代表。</p>
-                </li>
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div class="slide-container" id="slide21">
-    <h2 class="slide-title">🎯 答案揭曉</h2>
-    <div class="content-area">
-        <div class="two-column">
-            <div class="answer-box">
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 5px;">目標生物</p>
-                <h3 class="target-name">眼蟲</h3>
-                <p style="font-size: 28px; color: #94a3b8; margin-bottom: 20px; margin-top: 40px;">正確分類</p>
-                <div class="final-answer">
-                    原生生物界
-                </div>
-            </div>
-            <div>
-                <div class="image-wrapper"><img src="https://image1.gamme.com.tw/news2/2013/88/13/p6CSnqSdk6WX.jpg" alt="Euglena"></div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- 簡報換頁控制腳本 -->
 <script>
-    let currentSlideIndex = 0;
-    const slides = document.querySelectorAll('.slide-container');
+/* ══════════════════════════════════════════
+   QUESTION BANK
+   原核生物界 7題 / 其他各界 8題
+══════════════════════════════════════════ */
+const QB={
+monera:[
+  {name:"大腸桿菌",sub:"Escherichia coli",cls:"原核生物界 ─ 細菌",
+   c1:"我是單細胞生物，非常微小，肉眼看不到，我生活在許多動物（包括人類）的腸道裡，通常對宿主無害甚至有益。",
+   c2:"我的細胞有細胞壁和細胞膜，但<strong>沒有核膜</strong>，遺傳物質直接散佈在細胞質中；我沒有葉綠體，無法光合作用，靠分解有機物獲得能量。",
+   c3:"我的細胞呈<strong>桿狀</strong>，能靠<strong>二分裂</strong>極快速繁殖，是實驗室最常用的研究材料，也是造成某些食物中毒的兇手之一。"},
+  {name:"藍綠菌",sub:"Cyanobacteria（藍綠藻）",cls:"原核生物界 ─ 藍綠菌",
+   c1:"我是單細胞生物，廣泛生活在水域和潮濕土壤中，我是生態系中的<strong>生產者</strong>，能自己製造養分。",
+   c2:"我的細胞<strong>沒有核膜</strong>，遺傳物質直接在細胞質中，我靠行光合作用取得能量，但我的光合作用構造和植物細胞不同。",
+   c3:"我體內含有<strong>葉綠素</strong>，能行光合作用——但注意，我<strong>沒有葉綠體</strong>這個胞器；我在水中大量繁殖時，會造成水面出現藍綠色的「<strong>水華</strong>」現象。"},
+  {name:"乳酸菌",sub:"Lactobacillus",cls:"原核生物界 ─ 細菌",
+   c1:"我是單細胞生物，廣泛存在於食品和動物腸道中，人類已利用我超過數千年來製作特定食物。",
+   c2:"我的細胞<strong>沒有核膜</strong>，有細胞壁，沒有葉綠體；在<strong>缺氧</strong>環境下，我把醣類<strong>發酵轉化為乳酸</strong>來獲取能量。",
+   c3:"<strong>優格、泡菜、起司</strong>都靠我來製作；我產生的酸性環境能抑制其他雜菌生長，讓食物得以保存。"},
+  {name:"幽門螺旋桿菌",sub:"Helicobacter pylori",cls:"原核生物界 ─ 細菌",
+   c1:"我是單細胞生物，我生活在人體內一個<strong>強酸</strong>環境中，幾乎所有其他生物都無法在那裡存活。",
+   c2:"我的細胞<strong>沒有核膜</strong>，有細胞壁，沒有葉綠體；我有<strong>鞭毛</strong>可以移動，還能分泌酵素中和周圍的酸性環境保護自己。",
+   c3:"我的外形呈<strong>螺旋狀</strong>，長期住在人類<strong>胃黏膜</strong>上，是導致<strong>胃潰瘍</strong>的主要原因，發現我的科學家因此獲得諾貝爾醫學獎。"},
+  {name:"金黃色葡萄球菌",sub:"Staphylococcus aureus",cls:"原核生物界 ─ 細菌",
+   c1:"我是單細胞生物，廣泛存在於環境中，也住在人體皮膚和鼻腔表面，平時和人體相安無事。",
+   c2:"我的細胞<strong>沒有核膜</strong>，有細胞壁，沒有葉綠體；我的外形呈<strong>球形</strong>，常常數個聚集在一起，外觀像一串葡萄。",
+   c3:"當人體免疫力下降或傷口感染時，我會引起<strong>化膿</strong>；我也是常見的<strong>食物中毒</strong>原因，部分菌株對抗生素有抗藥性（MRSA）。"},
+  {name:"肺炎鏈球菌",sub:"Streptococcus pneumoniae",cls:"原核生物界 ─ 細菌",
+   c1:"我是單細胞生物，平時就住在許多健康人的<strong>鼻腔和喉嚨</strong>裡，但在免疫力低時會引發嚴重疾病。",
+   c2:"我的細胞<strong>沒有核膜</strong>，有細胞壁，沒有葉綠體；我的外形呈<strong>球形</strong>，常以<strong>成對或短鏈</strong>排列，外有莢膜幫助我躲避免疫系統的攻擊。",
+   c3:"我是造成幼兒和老人<strong>肺炎、腦膜炎</strong>的重要病原體，目前有疫苗可以預防，也是早期研究細菌遺傳的重要材料。"},
+  {name:"破傷風桿菌",sub:"Clostridium tetani",cls:"原核生物界 ─ 細菌",
+   c1:"我是單細胞生物，廣泛存在於<strong>土壤</strong>和動物腸道中，能以<strong>孢子</strong>的形式長期存活，對人類有潛在威脅。",
+   c2:"我的細胞<strong>沒有核膜</strong>，有細胞壁，沒有葉綠體；我是<strong>厭氧菌</strong>，只在缺氧環境（如深層傷口）中才能大量繁殖。",
+   c3:"我繁殖後會釋放強烈的<strong>神經毒素</strong>，使人肌肉持續痙攣收縮無法放鬆，即俗稱的「<strong>破傷風</strong>」；施打 <strong>DPT 疫苗</strong>是最佳預防方式。"},
+],
+protista:[
+  {name:"眼蟲",sub:"Euglena",cls:"原生生物界 ─ 原生動物",
+   c1:"我是單細胞生物，生活在淡水池塘中，在顯微鏡下游動時非常靈活，我能兼用「吃東西」和「曬太陽」兩種方式獲取能量。",
+   c2:"我的細胞<strong>有核膜</strong>（真核），有<strong>葉綠體</strong>可光合作用；但我<strong>沒有細胞壁</strong>，這讓我能像動物一樣自由改變形狀。",
+   c3:"我有一條長長的<strong>鞭毛</strong>負責推進游動；我同時具備光合作用（像植物）和主動移動、異營的能力（像動物），是最具代表性的單細胞真核生物之一。"},
+  {name:"草履蟲",sub:"Paramecium",cls:"原生生物界 ─ 原生動物",
+   c1:"我是單細胞生物，生活在淡水中，我不能光合作用，靠<strong>吞噬</strong>細菌和藻類為食，是微小的「捕食者」。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有葉綠體</strong>，也<strong>沒有細胞壁</strong>；我靠體表密布的<strong>纖毛</strong>擺動來移動，速度很快。",
+   c3:"我的外形像一隻草鞋，細胞內同時有<strong>大核</strong>（負責生命活動）和<strong>小核</strong>（負責生殖），還有<strong>收縮泡</strong>幫助調節水分，構造比細菌複雜許多。"},
+  {name:"變形蟲",sub:"Amoeba",cls:"原生生物界 ─ 原生動物",
+   c1:"我是單細胞生物，生活在水中或潮濕土壤，我沒有固定的形狀，會不斷改變輪廓來移動和覓食。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有葉綠體</strong>，也<strong>沒有細胞壁</strong>；我靠伸出<strong>偽足</strong>來移動，並把食物整個包裹起來，用<strong>食泡</strong>在細胞內消化。",
+   c3:"我以<strong>二分裂</strong>方式繁殖；某些種類（如痢疾阿米巴）會寄生在人體腸道，引起腹瀉和痢疾，是重要的病原性單細胞真核生物。"},
+  {name:"昆布（海帶）",sub:"Saccharina japonica",cls:"原生生物界 ─ 藻類",
+   c1:"我是多細胞生物，生活在海洋中，外觀很像植物，巨大的我可以長達數公尺，是許多海洋生物的棲地。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>，有<strong>葉綠體</strong>，能行光合作用自製養分；但我<strong>沒有真正的根、莖、葉</strong>的構造分化。",
+   c3:"我也<strong>沒有維管束</strong>來輸送水分和養分，整個身體都直接從海水吸收所需，因此無法被歸入植物界，而被歸類為大型<strong>藻類</strong>。"},
+  {name:"瘧原蟲",sub:"Plasmodium",cls:"原生生物界 ─ 原生動物",
+   c1:"我是單細胞生物，我沒有辦法自己行動，靠<strong>寄生</strong>在其他生物體內獲取養分，是熱帶地區人類最怕的微生物之一。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有葉綠體</strong>，<strong>沒有細胞壁</strong>；我住在人類的<strong>紅血球</strong>和肝臟細胞裡，靠吸收宿主的養分維生。",
+   c3:"我靠<strong>瘧蚊（按蚊）</strong>在人與人之間傳播，感染後引起週期性<strong>高燒和發冷</strong>，所導致的「<strong>瘧疾</strong>」是全球熱帶地區死亡人數最多的傳染病之一。"},
+  {name:"矽藻",sub:"Diatom",cls:"原生生物界 ─ 藻類",
+   c1:"我是單細胞生物，廣泛生活在海洋和淡水中，是水中生態系最重要的<strong>生產者</strong>之一，提供大量氧氣。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>葉綠體</strong>，可以行光合作用；我的細胞外還包著一層堅硬的<strong>二氧化矽（玻璃質）</strong>外殼。",
+   c3:"我外殼的幾何花紋<strong>精緻對稱</strong>，在顯微鏡下美麗如藝術品；死亡後沉積形成的「<strong>矽藻土</strong>」被用在過濾和研磨工業中。"},
+  {name:"水黴菌",sub:"Oomycetes（卵菌）",cls:"原生生物界 ─ 原生菌類",
+   c1:"我是多細胞生物，生活在<strong>水中或潮濕環境</strong>，外觀呈白色棉絮狀絲狀物，常長在死魚或枯葉的表面，靠分解有機物獲取養分。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有葉綠體</strong>；雖然我外形和真菌很像，但我的細胞壁成分是<strong>纖維素</strong>，而非真菌的幾丁質。",
+   c3:"正因為細胞壁成分不同（<strong>纖維素</strong>而非幾丁質），我被歸類為<strong>原生菌類</strong>而非真菌；我的近親造成了歷史上著名的<strong>愛爾蘭大飢荒</strong>（馬鈴薯晚疫病）。"},
+  {name:"綠藻",sub:"Chlorophyta（衣藻、石蓴等）",cls:"原生生物界 ─ 藻類",
+   c1:"我廣泛生活在淡水和海洋中，顏色<strong>鮮綠</strong>，是水域生態系中重要的生產者，有的只有一個細胞，有的由多個細胞組成。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>，有<strong>葉綠體</strong>，能行光合作用；這些特徵讓我看起來很像植物。",
+   c3:"但我<strong>沒有根、莖、葉</strong>的器官分化，也<strong>沒有維管束</strong>，水分和養分直接從環境中吸收，因此被歸類為<strong>藻類</strong>而非植物界。"},
+],
+fungi:[
+  {name:"香菇",sub:"Lentinula edodes",cls:"真菌界 ─ 蕈菇",
+   c1:"我是多細胞生物，生活在陰暗潮濕的<strong>腐木</strong>或土壤上，我是生態系中的<strong>分解者</strong>，靠分解枯死的有機物為生。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>（成分是<strong>幾丁質</strong>），<strong>沒有葉綠體</strong>，無法光合作用；我靠分泌酵素到體外分解有機物，再吸收養分。",
+   c3:"我的身體主要由地下的<strong>菌絲網</strong>構成；繁殖時，地面上長出像<strong>傘狀</strong>的子實體（也就是你平常看到的「菇」），用來散布孢子。"},
+  {name:"青黴菌",sub:"Penicillium",cls:"真菌界 ─ 黴菌",
+   c1:"我是多細胞生物，常常出現在食物表面，讓食物看起來<strong>長毛</strong>或有顏色變化，是讓人頭痛的食物腐敗者。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>（幾丁質），<strong>沒有葉綠體</strong>；我靠菌絲分解有機物維生，以<strong>孢子</strong>繁殖，孢子可隨空氣傳播。",
+   c3:"我的菌絲呈<strong>藍綠色</strong>，常長在發霉的橘子和麵包上；科學家從我身上發現了人類史上第一個抗生素——「<strong>青黴素（Penicillin）</strong>」。"},
+  {name:"酵母菌",sub:"Saccharomyces cerevisiae",cls:"真菌界 ─ 酵母菌",
+   c1:"我的存在讓麵包會膨脹，讓葡萄汁變成葡萄酒，人類利用我已有數千年歷史，我是食品工業的重要夥伴。",
+   c2:"我是<strong>單細胞</strong>真核生物，有<strong>核膜</strong>，有<strong>細胞壁</strong>（幾丁質），<strong>沒有葉綠體</strong>；在<strong>缺氧</strong>環境下，我能將醣類發酵，產生<strong>酒精</strong>和<strong>二氧化碳</strong>。",
+   c3:"我靠<strong>出芽生殖</strong>繁殖（在母細胞旁長出小突起再分離），外形是圓形小球，雖然是真菌，但和菌絲狀的黴菌外觀截然不同。"},
+  {name:"黑黴菌",sub:"Rhizopus stolonifer",cls:"真菌界 ─ 黴菌",
+   c1:"我常常出現在放太久的<strong>麵包或饅頭</strong>表面，形成黑色或深灰色的斑點，是最常見的食物腐敗真菌之一。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>（幾丁質），<strong>沒有葉綠體</strong>；我以<strong>菌絲</strong>蔓延在食物表面，靠分解有機物獲取養分。",
+   c3:"我的菌絲頂端會膨大成<strong>孢子囊</strong>，孢子成熟後大量散出傳播；雖然讓食物腐敗，但我也被工業上用來發酵製造特定有機酸。"},
+  {name:"靈芝",sub:"Ganoderma lucidum",cls:"真菌界 ─ 蕈菇",
+   c1:"我是多細胞生物，生長在枯樹幹或腐木上，是生態系中的<strong>分解者</strong>，靠菌絲分解木材中的有機物為生。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>（幾丁質），<strong>沒有葉綠體</strong>，無法光合作用；我的外觀和香菇同屬長出地面的<strong>傘狀（蕈菇類）</strong>子實體。",
+   c3:"我的子實體呈<strong>腎形</strong>，表面有深褐色的<strong>漆狀光澤</strong>，是著名的藥用真菌，在中藥文化中被稱為「仙草」，有別於一般食用菇類。"},
+  {name:"冬蟲夏草",sub:"Ophiocordyceps sinensis",cls:"真菌界 ─ 蕈菇",
+   c1:"我外表看起來像一根「蟲」，頭頂又長出一支「草」，事實上冬天那個蟲體是昆蟲幼蟲的<strong>屍體</strong>，而我就是長在裡面的生物。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>（幾丁質），<strong>沒有葉綠體</strong>；我靠<strong>寄生</strong>在昆蟲幼蟲體內獲取養分，菌絲逐漸取代蟲體組織。",
+   c3:"夏天時，我從蟲頭頂長出棒狀的<strong>子實體</strong>鑽出地面，和香菇、靈芝同屬<strong>蕈菇類</strong>，都靠散布孢子繁殖，是珍貴的傳統藥材。"},
+  {name:"菌根菌",sub:"Mycorrhizal fungi",cls:"真菌界 ─ 黴菌",
+   c1:"我是多細胞生物，廣泛存在於土壤中，我的菌絲會<strong>深入植物根部</strong>，和植物形成長期緊密的共生關係。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>（幾丁質），<strong>沒有葉綠體</strong>；我無法自製養分，靠植物提供的醣類維生。",
+   c3:"作為交換，我幫植物大幅增加根部的<strong>吸收面積</strong>，讓植物能吸收更多水分和<strong>磷元素</strong>；估計地球上 90% 的植物根部都有我的存在。"},
+  {name:"白粉病菌",sub:"Erysiphe spp.",cls:"真菌界 ─ 黴菌",
+   c1:"我是多細胞生物，我的存在讓植物葉片表面出現一片<strong>白色粉末</strong>，讓植物看起來像被白粉灑過，稱為「白粉病」。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>（幾丁質），<strong>沒有葉綠體</strong>；那白色粉末正是我的<strong>菌絲和孢子</strong>，我附著在植物葉片上吸取細胞的養分。",
+   c3:"我的孢子靠<strong>風力</strong>大量傳播，能感染玫瑰、小麥、瓜類等作物，是農業上重要的<strong>病原真菌（黴菌）</strong>。"},
+],
+plantae:[
+  {name:"蕨類",sub:"Ferns",cls:"植物界 ─ 蕨類",
+   c1:"我是多細胞植物，常生長在森林底層陰濕的環境，喜歡潮濕、遮蔭的地方，外觀青翠，葉片常常較大。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>，有<strong>葉綠體</strong>，可行光合作用；我還演化出了<strong>維管束</strong>，能輸送水分和養分到全身。",
+   c3:"但我<strong>不會開花，也沒有種子</strong>，繁殖靠<strong>孢子</strong>；仔細看我葉片的背面，常有褐色的<strong>孢子囊群</strong>，幼葉通常呈<strong>捲曲狀</strong>。"},
+  {name:"松（柏、杉）",sub:"Conifers",cls:"植物界 ─ 裸子植物",
+   c1:"我是多細胞植物，常見於山地或寒冷地區，高大挺拔，四季常綠（多數），是許多森林的主要樹種。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>，有<strong>葉綠體</strong>，有<strong>維管束</strong>；我靠<strong>種子</strong>繁殖，不靠孢子。",
+   c3:"我的種子<strong>直接裸露</strong>，沒有果皮包覆，結出的是<strong>毬果</strong>而不是花朵；「裸子」就是指種子裸露在外的意思。"},
+  {name:"水稻",sub:"Oryza sativa",cls:"植物界 ─ 被子植物（單子葉）",
+   c1:"我是多細胞植物，是人類最重要的糧食作物之一，需要大量水分，通常種植在淹水的<strong>水田</strong>中。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>，有<strong>葉綠體</strong>，有<strong>維管束</strong>；我能<strong>開花</strong>（靠風力傳粉），種子（米粒）外面有<strong>果皮</strong>包覆。",
+   c3:"我的種子萌發後只長出<strong>一片子葉</strong>；葉脈為<strong>平行葉脈</strong>，根系為鬚根系，這幾項特徵可以幫助你判斷我屬於被子植物中的哪一類。"},
+  {name:"玫瑰",sub:"Rosa",cls:"植物界 ─ 被子植物（雙子葉）",
+   c1:"我是多細胞植物，全世界最著名的觀賞花卉之一，莖上長有<strong>尖刺</strong>，花朵色彩豔麗，香氣迷人。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>，有<strong>葉綠體</strong>，有<strong>維管束</strong>；我能<strong>開花</strong>，靠昆蟲傳粉，種子外有<strong>果皮</strong>保護，屬於被子植物。",
+   c3:"我的種子萌發後長出<strong>兩片子葉</strong>；葉脈為<strong>網狀葉脈</strong>，莖的維管束排列成環形，這幾項特徵可以幫助你判斷我屬於被子植物中的哪一類。"},
+  {name:"苔蘚",sub:"Bryophytes",cls:"植物界 ─ 蘚苔",
+   c1:"我是多細胞植物，通常長在陰濕的岩石、樹幹或地面，外觀矮小嫩綠，像一層薄薄的綠色地毯或墊子。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>，有<strong>葉綠體</strong>，可行光合作用；但我<strong>沒有維管束</strong>，所以水分和養分的傳輸效率很低。",
+   c3:"正因為沒有維管束，我只能長得<strong>非常矮小</strong>（通常不超過幾公分）；我不開花、不結種子，靠<strong>孢子</strong>繁殖，和蕨類同為孢子植物，但蕨類有維管束而我沒有。"},
+  {name:"銀杏",sub:"Ginkgo biloba",cls:"植物界 ─ 裸子植物",
+   c1:"我是多細胞植物，被稱為「<strong>活化石</strong>」，在恐龍還存在的時代我就已經出現了，是現存最古老的樹種之一。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>，有<strong>葉綠體</strong>，有<strong>維管束</strong>；我靠<strong>種子</strong>繁殖，但<strong>不會開花</strong>，種子<strong>裸露在外</strong>，沒有果皮包覆。",
+   c3:"我的葉片是獨特的<strong>扇形</strong>，秋天會變成燦爛的<strong>金黃色</strong>；我是銀杏目目前唯一存活的物種，雌雄異株，種子即俗稱的「白果」。"},
+  {name:"玉米",sub:"Zea mays",cls:"植物界 ─ 被子植物（單子葉）",
+   c1:"我是多細胞植物，是全球三大糧食作物之一，莖幹高大粗壯，果實（玉米棒）被包在層層葉片中。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>，有<strong>葉綠體</strong>，有<strong>維管束</strong>；我能<strong>開花</strong>（靠風力傳粉），種子（玉米粒）外有<strong>果皮</strong>包覆，屬於被子植物。",
+   c3:"我的種子萌發後只長出<strong>一片子葉</strong>；葉脈為<strong>平行葉脈</strong>，根系為鬚根系，這幾項特徵可以幫助你判斷我屬於被子植物中的哪一類。"},
+  {name:"鐵樹（蘇鐵）",sub:"Cycas revoluta",cls:"植物界 ─ 裸子植物",
+   c1:"我是多細胞植物，生長極為緩慢，外觀像棕櫚樹，常被種在庭院或公園，民間有「千年鐵樹才開花」的說法。",
+   c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>，有<strong>葉綠體</strong>，有<strong>維管束</strong>；我靠<strong>種子</strong>繁殖，<strong>不開花</strong>，種子<strong>裸露在外</strong>，沒有果皮包覆。",
+   c3:"我有粗短直立的莖幹和大型<strong>羽狀複葉</strong>，雌雄異株；我和松、柏同屬<strong>裸子植物</strong>，但外觀上和松樹差異很大。"},
+],
+animalia:[
+  {name:"蝙蝠",sub:"Chiroptera",cls:"動物界 ─ 哺乳類",
+   c1:"我是多細胞動物，是少數能<strong>真正飛翔</strong>的哺乳動物，棲息在山洞或樹林中，白天休息，黃昏後出來活動。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>內溫動物</strong>（恆溫），能靠自身代謝維持固定體溫，不受外界溫度影響。",
+   c3:"我體表有<strong>毛</strong>，是<strong>胎生</strong>動物，幼體出生後靠母體<strong>乳汁</strong>哺育；雖然我會飛，但我<strong>沒有羽毛</strong>，翅膀其實是皮膜，還能靠發射<strong>超聲波</strong>在黑暗中導航。"},
+  {name:"山椒魚",sub:"Hynobius（台灣山椒魚）",cls:"動物界 ─ 兩生類",
+   c1:"我是多細胞動物，外型長得像蜥蜴，喜歡躲在山區陰暗潮濕的地方，是台灣珍貴的保育類動物。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>外溫動物</strong>（冷血），體溫隨外界環境變化，無法自行調節。",
+   c3:"我<strong>沒有鱗片</strong>，皮膚濕潤裸露（可輔助呼吸）；我必須回到<strong>水中產卵（體外受精）</strong>，幼體用<strong>鰓</strong>呼吸，成體改用<strong>肺和皮膚</strong>呼吸——「兩生」二字正是指這種水陸兩棲的特性。"},
+  {name:"鯨魚",sub:"Cetacea",cls:"動物界 ─ 哺乳類",
+   c1:"我是多細胞動物，一輩子生活在海洋中，外型流線型巨大，是地球上現存體型最大的動物。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>內溫動物</strong>，能維持固定體溫；我<strong>沒有鰓</strong>，必須定時浮出水面用<strong>肺</strong>呼吸。",
+   c3:"我體表有稀疏的<strong>毛</strong>，是<strong>胎生</strong>動物，幼體出生後靠母體<strong>乳汁</strong>哺育——雖然生活在海裡，但這三項特徵讓我確實屬於哺乳類。"},
+  {name:"鴨嘴獸",sub:"Ornithorhynchus anatinus",cls:"動物界 ─ 哺乳類",
+   c1:"我是多細胞動物，外觀非常奇特：我有一張像鴨子的扁嘴、像水獺的身體和像海狸的扁平尾巴，生活在澳洲的河流中。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>內溫動物</strong>，體表有<strong>毛</strong>，用<strong>肺</strong>呼吸。",
+   c3:"我最特別的地方是：我雖然是哺乳類，卻是<strong>卵生</strong>的（會產下有殼的卵）！小寶寶孵化後，母體會分泌<strong>乳汁</strong>從皮膚滲出哺育，是哺乳類中極少數的<strong>單孔目</strong>動物。"},
+  {name:"眼鏡蛇",sub:"Naja（眼鏡王蛇）",cls:"動物界 ─ 爬蟲類",
+   c1:"我是多細胞動物，體型修長，沒有四肢，靠身體的肌肉和鱗片貼地滑行，是讓許多人聞之色變的生物。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>外溫動物</strong>（冷血），體表覆蓋著<strong>鱗片</strong>；用<strong>肺</strong>呼吸，在陸地產下有<strong>革質外殼</strong>的卵。",
+   c3:"當受到威脅時，我會撐開<strong>頸部皮褶</strong>讓自己顯得更巨大（這也是「眼鏡蛇」名稱的由來），並能噴射或注入<strong>毒液</strong>，是爬蟲類中極具代表性的物種。"},
+  {name:"企鵝",sub:"Spheniscidae",cls:"動物界 ─ 鳥類",
+   c1:"我是多細胞動物，生活在南半球，尤其是南極，穿著黑白相間的「禮服」，走路搖搖擺擺，非常可愛。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>內溫動物</strong>，體表覆蓋著<strong>羽毛</strong>，用<strong>肺</strong>呼吸，是<strong>卵生</strong>動物。",
+   c3:"雖然我有翅膀，但我<strong>不能飛翔</strong>，翅膀演化成鰭狀用來游泳；孵蛋時由<strong>雄企鵝</strong>把蛋放在腳背上，用腹部皮膚保溫，在零下酷寒中站立數個月不進食。"},
+  {name:"鮭魚",sub:"Oncorhynchus（太平洋鮭）",cls:"動物界 ─ 魚類",
+   c1:"我是多細胞動物，一生橫跨淡水和海洋兩種環境，成年後會從大海千里游回<strong>出生的河流上游</strong>產卵，這段旅程堪稱自然界最壯觀的生命現象之一。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>外溫動物</strong>，體表有<strong>鱗片</strong>，終生用<strong>鰓</strong>呼吸，靠鰭游泳。",
+   c3:"我靠<strong>體外受精</strong>繁殖，雌魚在河床砂礫中產卵後便死亡；我的屍體成為河岸森林的養分，完成一個從海洋到森林的完整<strong>生態循環</strong>。"},
+  {name:"獨角仙",sub:"Allomyrina dichotoma",cls:"動物界 ─ 昆蟲類",
+   c1:"我是多細胞動物，夏天的夜晚常被路燈吸引，飛行時會發出嗡嗡聲，是台灣山區很受小朋友喜愛的大型甲蟲。",
+   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我<strong>沒有脊椎骨</strong>，體表有堅硬的<strong>幾丁質外骨骼</strong>，身體分為<strong>頭、胸、腹</strong>三部分，有<strong>六隻腳</strong>。",
+   c3:"雄性頭部有一根長長的<strong>角</strong>，用來打鬥爭奪配偶；我一生經歷卵→幼蟲→蛹→成蟲四個階段，稱為「<strong>完全變態</strong>」，幼蟲（雞母蟲）住在腐植土裡。"},
+],
+};
 
-    function updateView() {
-        slides.forEach((slide, index) => {
-            if (index === currentSlideIndex) {
-                slide.classList.add('active');
-            } else {
-                slide.classList.remove('active');
-            }
-        });
+const KN={monera:"原核生物界",protista:"原生生物界",fungi:"真菌界",plantae:"植物界",animalia:"動物界"};
+const PTS_LABEL={5:"第一條線索後作答 🥇",3:"第二條線索後作答 🥈",1:"第三條線索後作答 🥉",0:"本題未得分"};
+
+/* ── STATE ── */
+let mode='self'; // 'self' | 'class'
+let sel_k=['monera','protista','fungi','plantae','animalia'];
+let sel_n=10, questions=[], qi=0, clue=1, score=0, history=[], timer=null, tsec=0;
+
+/* ── AUDIO ── */
+const AC=new(window.AudioContext||window.webkitAudioContext)();
+function beep(f,d,t='sine',v=0.15){
+  try{const g=AC.createGain(),o=AC.createOscillator();o.type=t;o.frequency.value=f;g.gain.setValueAtTime(v,AC.currentTime);g.gain.exponentialRampToValueAtTime(0.001,AC.currentTime+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d);}catch(e){}
+}
+function sfxReveal(){beep(440,0.1);setTimeout(()=>beep(554,0.15),70);}
+function sfxCorrect(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,0.13),i*65));}
+function sfxTick(){beep(880,0.04,'square',0.04);}
+function sfxTimeout(){beep(220,0.28,'sawtooth',0.09);}
+function sfxNext(){beep(392,0.09);}
+
+/* ── PARTICLES ── */
+function burst(x,y,col='#5a6e45'){
+  for(let i=0;i<14;i++){
+    const p=document.createElement('div');p.className='particle';
+    const a=Math.random()*Math.PI*2,d=55+Math.random()*75;
+    p.style.cssText=`left:${x}px;top:${y}px;width:${6+Math.random()*5}px;height:${6+Math.random()*5}px;background:${col};--tx:${Math.cos(a)*d}px;--ty:${Math.sin(a)*d}px;animation-duration:${0.5+Math.random()*0.35}s`;
+    document.body.appendChild(p);setTimeout(()=>p.remove(),900);
+  }
+}
+
+/* ── TOAST ── */
+function toast(msg,dur=2000){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+/* ── MODE SELECT ── */
+function selectMode(m){
+  mode=m;
+  document.getElementById('card-self').classList.toggle('sel',m==='self');
+  document.getElementById('card-class').classList.toggle('sel',m==='class');
+}
+function goSetup(){
+  if(AC.state==='suspended')AC.resume();
+  document.getElementById('setup-mode-badge').textContent=
+    mode==='self'?'🧑‍💻 自行挑戰模式':'👨‍🏫 全班挑戰模式';
+  go('screen-setup');
+}
+
+/* ── SETUP ── */
+function toggleK(el){
+  const k=el.dataset.k;
+  if(el.classList.contains('sel')){if(sel_k.length<=1){toast('至少選擇一個界！');return;}el.classList.remove('sel');sel_k=sel_k.filter(x=>x!==k);}
+  else{el.classList.add('sel');sel_k.push(k);}
+  updateNote();
+}
+function setCount(n,btn){
+  sel_n=n;document.querySelectorAll('.cnt-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');updateNote();
+}
+function updateNote(){
+  const total=sel_k.reduce((s,k)=>s+QB[k].length,0);
+  const actual=Math.min(sel_n,total);
+  document.getElementById('count-note').textContent=`從選定的 ${sel_k.length} 個界（共 ${total} 題）中隨機抽取 ${actual} 題`;
+}
+function shuffle(a){return a.sort(()=>Math.random()-0.5);}
+
+/* ── GAME ── */
+function startGame(){
+  let pool=[];sel_k.forEach(k=>QB[k].forEach(q=>pool.push({...q,kingdom:k})));
+  shuffle(pool);questions=pool.slice(0,Math.min(sel_n,pool.length));
+  qi=0;score=0;history=[];
+
+  // Show/hide mode-specific UI
+  const isSelf=mode==='self';
+  document.getElementById('timer-row').style.display=isSelf?'flex':'none';
+  document.getElementById('self-actions').style.display=isSelf?'flex':'none';
+  document.getElementById('class-actions').style.display=isSelf?'none':'flex';
+  // Score tag: hide in class mode
+  document.getElementById('q-score').style.display=isSelf?'':'none';
+  // Answer score box: hide in class mode
+  document.getElementById('ans-score-box').style.display=isSelf?'flex':'none';
+
+  loadQ();go('screen-question');
+}
+
+function loadQ(){
+  const q=questions[qi];clue=1;
+  document.getElementById('q-num').textContent=`第 ${qi+1} 題`;
+  document.getElementById('q-king').textContent=KN[q.kingdom];
+  document.getElementById('q-prog').textContent=`${qi+1} / ${questions.length}`;
+  document.getElementById('q-score').textContent=`🍃 ${score} 分`;
+  document.getElementById('prog-fill').style.width=`${qi/questions.length*100}%`;
+  document.getElementById('c1t').innerHTML=q.c1;
+  document.getElementById('c2t').innerHTML=q.c2;
+  document.getElementById('c3t').innerHTML=q.c3;
+  setVisible(1);updateActionBtn();
+  if(mode==='self')startTimer();
+}
+
+function setVisible(n){
+  ['c1','c2','c3'].forEach((id,i)=>{
+    const el=document.getElementById(id);
+    el.className='clue-card '+(i<n?'visible clue-reveal':'hidden');
+  });
+}
+function updateActionBtn(){
+  const labels=['顯示線索二 ▼','顯示線索三 ▼','查看答案 →'];
+  document.getElementById('btn-next').textContent=labels[Math.min(clue-1,2)];
+  const cb=document.getElementById('class-next-clue');
+  if(cb){
+    cb.textContent=clue<3?`顯示線索${['','二','三'][clue]} ▼`:'—';
+    cb.disabled=clue>=3;
+    cb.style.opacity=clue>=3?'0.4':'1';
+  }
+}
+
+function nextClue(){
+  if(clue>=3)return;
+  sfxReveal();stopTimer();
+  clue++;setVisible(clue);updateActionBtn();
+  if(mode==='self')startTimer();
+}
+
+function revealAnswer(forcePts){
+  stopTimer();
+  const q=questions[qi];
+  // In self mode, auto compute from clue; in class mode, use forcePts
+  const pts=mode==='self'?[0,5,3,1,0][Math.min(clue,3)]:forcePts;
+  score+=pts;history.push({name:q.name,kingdom:q.kingdom,pts,clue});
+  sfxCorrect();
+
+  document.getElementById('ans-qinfo').textContent=`第 ${qi+1} 題 / 共 ${questions.length} 題`;
+  document.getElementById('ans-name').textContent=q.name;
+  document.getElementById('ans-sub').textContent=q.sub;
+  document.getElementById('ans-cls').textContent=q.cls;
+
+  if(mode==='self'){
+    const gp=document.getElementById('gain-pts');
+    gp.textContent=`+${pts} 分`;
+    gp.style.color=pts===5?'var(--gold)':pts===3?'var(--taupe)':pts===1?'var(--sienna)':'var(--ink4)';
+    document.getElementById('gain-label').textContent=PTS_LABEL[pts]||PTS_LABEL[0];
+    document.getElementById('gain-total').textContent=`累計 ${score} 分`;
+  }
+
+  document.getElementById('mini-clues').innerHTML=
+    `<div class="mini-clue" data-c="1"><b>線索一（5分）</b>${q.c1}</div>
+     <div class="mini-clue" data-c="2"><b>線索二（3分）</b>${q.c2}</div>
+     <div class="mini-clue" data-c="3"><b>線索三（1分）</b>${q.c3}</div>`;
+
+  const isLast=qi>=questions.length-1;
+  document.getElementById('btn-nextq').textContent=isLast?'查看最終成績 🏆':'下一題 →';
+
+  setTimeout(()=>{
+    const box=document.getElementById('ans-name').getBoundingClientRect();
+    const col=pts===5?'#c8830a':pts===3?'#7a6a58':'#8b4a2b';
+    burst(box.left+box.width/2,box.top+box.height/2,col);
+  },200);
+
+  go('screen-answer');
+}
+
+function nextQ(){
+  sfxNext();qi++;
+  if(qi>=questions.length)showBoard(true);
+  else{loadQ();go('screen-question');}
+}
+
+/* ── TIMER ── */
+function startTimer(){
+  stopTimer();tsec=15;renderTimer();
+  timer=setInterval(()=>{
+    tsec--;renderTimer();sfxTick();
+    if(tsec<=0){
+      stopTimer();sfxTimeout();
+      if(clue<3){clue++;setVisible(clue);updateActionBtn();startTimer();}
+      else{revealAnswer(0);}
     }
+  },1000);
+}
+function stopTimer(){clearInterval(timer);timer=null;}
+function renderTimer(){
+  const pct=tsec/15*100;
+  document.getElementById('timer-fill').style.width=pct+'%';
+  document.getElementById('timer-fill').style.backgroundColor=pct>60?'var(--moss)':pct>30?'var(--gold)':'var(--sienna)';
+  const n=document.getElementById('timer-num');
+  n.textContent=tsec;n.style.color=pct<=30?'var(--sienna)':'var(--ink)';
+}
 
-    function advance() {
-        const currentSlide = slides[currentSlideIndex];
-        // 尋找當前頁面中「尚未顯示的線索(fragment)」
-        const hiddenFragments = currentSlide.querySelectorAll('.fragment:not(.visible)');
+/* ── SCOREBOARD ── */
+function showBoard(final){
+  const max=questions.length*5,pct=Math.round(score/max*100);
+  document.getElementById('board-title').textContent=final?'🏆 遊戲結束！':'📊 中途計分板';
+  document.getElementById('board-score').textContent=score;
+  document.getElementById('board-sub').textContent=
+    mode==='self'?`滿分 ${max} 分 ／ 本次得分率 ${pct}%`:`共 ${questions.length} 題 ／ 總得分 ${score} 分`;
 
-        if (hiddenFragments.length > 0) {
-            // 如果還有未顯示的線索，就顯示下一個
-            hiddenFragments[0].classList.add('visible');
-        } else {
-            // 如果線索都顯示完了，就切換到下一頁
-            if (currentSlideIndex < slides.length - 1) {
-                currentSlideIndex++;
-                updateView();
-            }
-        }
-    }
+  const s5=history.filter(h=>h.pts===5).length,s3=history.filter(h=>h.pts===3).length,
+        s1=history.filter(h=>h.pts===1).length,s0=history.filter(h=>h.pts===0).length;
+  document.getElementById('board-stats').innerHTML=`
+    <div class="bstat"><div class="bstat-num" style="color:var(--gold)">🥇 ${s5}</div><div class="bstat-label">一線索答對</div></div>
+    <div class="bstat"><div class="bstat-num" style="color:var(--taupe)">🥈 ${s3}</div><div class="bstat-label">二線索答對</div></div>
+    <div class="bstat"><div class="bstat-num" style="color:var(--sienna)">🥉 ${s1}</div><div class="bstat-label">三線索答對</div></div>
+    <div class="bstat"><div class="bstat-num" style="color:var(--ink4)">❌ ${s0}</div><div class="bstat-label">未得分</div></div>`;
 
-    function goBack() {
-        const currentSlide = slides[currentSlideIndex];
-        // 尋找當前頁面中「已顯示的線索(fragment)」
-        const visibleFragments = currentSlide.querySelectorAll('.fragment.visible');
+  document.getElementById('board-history').innerHTML=history.map((h,i)=>`
+    <div class="hrow">
+      <span class="h-n">${i+1}</span>
+      <span class="h-name">${h.name}</span>
+      <span class="h-k">${KN[h.kingdom]}</span>
+      <span class="h-pts ${h.pts===5?'hp5':h.pts===3?'hp3':h.pts===1?'hp1':'hp0'}">+${h.pts} 分</span>
+    </div>`).join('');
 
-        if (visibleFragments.length > 0) {
-            // 如果有已顯示的線索，就隱藏最後一個
-            visibleFragments[visibleFragments.length - 1].classList.remove('visible');
-        } else {
-            // 退回上一頁，並將上一頁的線索全部顯示出來
-            if (currentSlideIndex > 0) {
-                currentSlideIndex--;
-                updateView();
-                const prevSlide = slides[currentSlideIndex];
-                prevSlide.querySelectorAll('.fragment').forEach(f => f.classList.add('visible'));
-            }
-        }
-    }
+  const btns=document.getElementById('board-btns');
+  btns.innerHTML=final
+    ?`<button class="btn-restart" onclick="restartGame()">🌱 重新開始</button>`
+    :`<button class="btn-continue" onclick="continueGame()">繼續遊戲 →</button>
+      <button class="btn-restart" onclick="restartGame()">重新開始</button>`;
 
-    // 支援鍵盤翻頁
-    document.addEventListener('keydown', (e) => {
-        if (['ArrowRight', 'Space', 'Enter', 'PageDown'].includes(e.code) || e.key === ' ') {
-            e.preventDefault();
-            advance();
-        } else if (['ArrowLeft', 'PageUp'].includes(e.code)) {
-            e.preventDefault();
-            goBack();
-        }
-    });
+  if(final){
+    setTimeout(()=>{
+      const box=document.getElementById('board-score').getBoundingClientRect();
+      ['#c8830a','#5a6e45','#8b4a2b'].forEach(c=>burst(box.left+box.width/2+Math.random()*80-40,box.top+Math.random()*30,c));
+    },400);
+  }
+  go('screen-board');
+}
+function continueGame(){loadQ();go('screen-question');}
+function restartGame(){stopTimer();go('screen-mode');}
 
-    // 支援滑鼠點擊任意處翻頁
-    document.addEventListener('click', () => {
-        advance();
-    });
+/* ── NAV ── */
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
 
-    // 初始化第一頁
-    updateView();
+/* ── KEYBOARD ── */
+document.addEventListener('keydown',e=>{
+  const active=document.querySelector('.screen.active')?.id;
+  if(['Space','ArrowRight','Enter'].includes(e.code)){
+    e.preventDefault();
+    if(active==='screen-question'&&mode==='self')nextClue();
+    else if(active==='screen-answer')nextQ();
+  }
+});
+
+updateNote();
 </script>
-
 </body>
 </html>
