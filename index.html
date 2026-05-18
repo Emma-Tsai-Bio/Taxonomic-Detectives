@@ -410,7 +410,6 @@ body::before{
 <div class="screen" id="screen-question">
   <div class="q-header">
     <div class="tag tag-moss" id="q-num">第 1 題</div>
-    <div class="tag tag-neutral" id="q-king"></div>
     <div class="q-progress-info" id="q-prog">1 / 10</div>
     <div class="tag tag-gold q-score-tag" id="q-score">🍃 0 分</div>
   </div>
@@ -538,6 +537,14 @@ monera:[
    c1:"我是單細胞生物，廣泛存在於<strong>土壤</strong>和動物腸道中，能以<strong>孢子</strong>的形式長期存活，對人類有潛在威脅。",
    c2:"我的細胞<strong>沒有核膜</strong>，有細胞壁，沒有葉綠體；我是<strong>厭氧菌</strong>，只在缺氧環境（如深層傷口）中才能大量繁殖。",
    c3:"我繁殖後會釋放強烈的<strong>神經毒素</strong>，使人肌肉持續痙攣收縮無法放鬆，即俗稱的「<strong>破傷風</strong>」；施打 <strong>DPT 疫苗</strong>是最佳預防方式。"},
+  {name:"念珠藻",sub:"Nostoc",cls:"原核生物界 ─ 藍綠菌",
+   c1:"我是群體生活的生物，常見於潮濕的岩石、土壤或水溝邊，外觀是一串串像「<strong>珠鍊</strong>」般排列的細胞，下雨過後特別容易發現我。",
+   c2:"我的細胞<strong>沒有核膜</strong>，遺傳物質直接散在細胞質中；我能靠光合作用自製養分，但我進行光合作用的構造和植物細胞<strong>不同</strong>。",
+   c3:"我體內有<strong>葉綠素</strong>能行光合作用，但<strong>沒有葉綠體</strong>這個胞器；此外我還能進行<strong>固氮作用</strong>，把氮氣轉化為可利用的氮化物，對土壤和水域生態系非常重要。"},
+  {name:"螺旋藻",sub:"Spirulina",cls:"原核生物界 ─ 藍綠菌",
+   c1:"我的外形呈漂亮的<strong>螺旋狀</strong>，廣泛生活在熱帶和亞熱帶的鹼性水域中，近年來被大量養殖，被稱為「未來的超級食物」。",
+   c2:"我的細胞<strong>沒有核膜</strong>，有細胞壁，靠光合作用自製養分；我非常微小，單獨一條肉眼難以看見，但大量繁殖時水面會呈現藍綠色。",
+   c3:"我體內含有<strong>葉綠素</strong>能行光合作用，但<strong>沒有葉綠體</strong>這個胞器；我富含蛋白質和多種維生素，常被製成<strong>健康食品錠劑</strong>販售，分類上和藍綠菌屬於同一類群。"},
 ],
 protista:[
   {name:"眼蟲",sub:"Euglena",cls:"原生生物界 ─ 原生動物",
@@ -572,6 +579,10 @@ protista:[
    c1:"我廣泛生活在淡水和海洋中，顏色<strong>鮮綠</strong>，是水域生態系中重要的生產者，有的只有一個細胞，有的由多個細胞組成。",
    c2:"我的細胞<strong>有核膜</strong>，有<strong>細胞壁</strong>，有<strong>葉綠體</strong>，能行光合作用；這些特徵讓我看起來很像植物。",
    c3:"但我<strong>沒有根、莖、葉</strong>的器官分化，也<strong>沒有維管束</strong>，水分和養分直接從環境中吸收，因此被歸類為<strong>藻類</strong>而非植物界。"},
+  {name:"黏菌",sub:"Myxomycota",cls:"原生生物界 ─ 原生菌類",
+   c1:"我是一種非常奇特的生物，生活在潮濕的腐木或落葉堆上，我的一生會經歷「像動物」和「像另一種截然不同的生物」兩個完全不同的階段。",
+   c2:"我的細胞<strong>有核膜</strong>（真核生物），<strong>沒有葉綠體</strong>，也<strong>沒有細胞壁</strong>；在「動物階段」，我能像變形蟲一樣伸出<strong>偽足</strong>移動和吞噬細菌，完全沒有固定形狀。",
+   c3:"當環境惡化（乾燥或缺食物）時，數以萬計的細胞會聚集成一個<strong>子實體</strong>，長出柄和孢子囊，靠散布<strong>孢子</strong>繁殖；因為細胞壁成分、運動方式都與蕈菇、黴菌不同，我被歸類為<strong>原生菌類</strong>。"},
 ],
 fungi:[
   {name:"香菇",sub:"Lentinula edodes",cls:"真菌界 ─ 蕈菇",
@@ -680,6 +691,14 @@ animalia:[
 const KN={monera:"原核生物界",protista:"原生生物界",fungi:"真菌界",plantae:"植物界",animalia:"動物界"};
 const PTS_LABEL={5:"第一條線索後作答 🥇",3:"第二條線索後作答 🥈",1:"第三條線索後作答 🥉",0:"本題未得分"};
 
+/* 病毒：特殊題，不屬於五界，每局必出現一次 */
+const VIRUS={
+  name:"病毒",sub:"Virus",cls:"不屬於五界 ─ 病毒（非細胞生物）",kingdom:"virus",
+  c1:"我無所不在，會讓人感冒、發燒，也可能造成全球大流行；我能「感染」所有生物，從細菌到動植物都逃不過我。",
+  c2:"我的結構極度簡單，我<strong>沒有細胞</strong>——沒有細胞膜、沒有細胞質、沒有核膜，只有一段<strong>遺傳物質</strong>（DNA 或 RNA）包在<strong>蛋白質外殼</strong>裡。",
+  c3:"正因為我<strong>沒有細胞</strong>，我無法獨立進行任何生命活動，必須<strong>侵入宿主細胞</strong>才能複製繁殖；五界分類系統裡沒有我的位置，我是生物界的「<strong>局外人</strong>」。"
+};
+
 /* ── STATE ── */
 let mode='self'; // 'self' | 'class'
 let sel_k=['monera','protista','fungi','plantae','animalia'];
@@ -737,15 +756,20 @@ function setCount(n,btn){
 }
 function updateNote(){
   const total=sel_k.reduce((s,k)=>s+QB[k].length,0);
-  const actual=Math.min(sel_n,total);
-  document.getElementById('count-note').textContent=`從選定的 ${sel_k.length} 個界（共 ${total} 題）中隨機抽取 ${actual} 題`;
+  const actual=Math.min(sel_n,total)+1; // +1 for virus
+  document.getElementById('count-note').textContent=`從選定的 ${sel_k.length} 個界（共 ${total} 題）中隨機抽取 ${actual-1} 題，另加病毒特殊題共 ${actual} 題`;
 }
 function shuffle(a){return a.sort(()=>Math.random()-0.5);}
 
 /* ── GAME ── */
 function startGame(){
   let pool=[];sel_k.forEach(k=>QB[k].forEach(q=>pool.push({...q,kingdom:k})));
-  shuffle(pool);questions=pool.slice(0,Math.min(sel_n,pool.length));
+  shuffle(pool);
+  const regular=pool.slice(0,Math.min(sel_n,pool.length));
+  // Insert virus at a random position (not first, not last — keep some suspense)
+  const insertAt=regular.length<=1?0:Math.floor(Math.random()*(regular.length-1))+1;
+  regular.splice(insertAt,0,VIRUS);
+  questions=regular;
   qi=0;score=0;history=[];
 
   // Show/hide mode-specific UI
@@ -764,7 +788,6 @@ function startGame(){
 function loadQ(){
   const q=questions[qi];clue=1;
   document.getElementById('q-num').textContent=`第 ${qi+1} 題`;
-  document.getElementById('q-king').textContent=KN[q.kingdom];
   document.getElementById('q-prog').textContent=`${qi+1} / ${questions.length}`;
   document.getElementById('q-score').textContent=`🍃 ${score} 分`;
   document.getElementById('prog-fill').style.width=`${qi/questions.length*100}%`;
@@ -884,7 +907,7 @@ function showBoard(final){
     <div class="hrow">
       <span class="h-n">${i+1}</span>
       <span class="h-name">${h.name}</span>
-      <span class="h-k">${KN[h.kingdom]}</span>
+      <span class="h-k">${KN[h.kingdom]||'特殊題'}</span>
       <span class="h-pts ${h.pts===5?'hp5':h.pts===3?'hp3':h.pts===1?'hp1':'hp0'}">+${h.pts} 分</span>
     </div>`).join('');
 
