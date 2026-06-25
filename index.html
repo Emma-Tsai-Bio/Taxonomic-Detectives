@@ -98,8 +98,7 @@ body::before{
 .setup-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:clamp(10px,1.8vw,20px);width:100%;max-width:1100px;}
 .setup-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--r2);padding:clamp(16px,2.5vw,28px);box-shadow:var(--shadow);}
 .setup-card-title{font-size:clamp(10px,1.2vw,12px);letter-spacing:3px;color:var(--ink4);text-transform:uppercase;margin-bottom:clamp(10px,1.5vh,16px);font-weight:700;}
-.kingdom-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:clamp(6px,1vw,10px);}
-@media(max-width:600px){.kingdom-grid{grid-template-columns:repeat(3,1fr);}}
+.kingdom-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(6px,1vw,10px);}
 .kcard{
   border:2px solid var(--border);border-radius:var(--r);padding:clamp(8px,1.5vw,14px) 6px;
   text-align:center;cursor:pointer;background:var(--bg);transition:var(--tr);position:relative;user-select:none;
@@ -373,6 +372,9 @@ body::before{
         <div class="kcard sel" data-k="animalia" onclick="toggleK(this)">
           <span class="k-icon">🦁</span><div class="k-name">動物界</div><div class="k-sub">脊索・無脊椎</div><div class="k-check">✓</div>
         </div>
+        <div class="kcard sel" data-k="virus" onclick="toggleK(this)">
+          <span class="k-icon">👾</span><div class="k-name">病毒</div><div class="k-sub">非細胞生物</div><div class="k-check">✓</div>
+        </div>
       </div>
       <div style="margin-top:16px">
         <p class="setup-card-title" style="margin-bottom:10px">📋 測驗題數</p>
@@ -383,7 +385,7 @@ body::before{
           <button class="cnt-btn" onclick="setCount(15,this)">15</button>
           <button class="cnt-btn" onclick="setCount(20,this)">20</button>
         </div>
-        <p class="count-note" id="count-note">從選定的界中隨機抽取 10 題</p>
+        <p class="count-note" id="count-note"></p>
       </div>
     </div>
     <div class="setup-card">
@@ -697,23 +699,21 @@ animalia:[
    c1:"生活於水中或寄生於生物體內，部分有極強再生能力。",
    c2:"身體同樣只有單一開口，食物殘渣會從同一開口排出。",
    c3:"身體非常扁平，且沒有體腔與分節，外觀像是一片葉子。"}
+],
+virus:[
+  {name:"病毒",sub:"Virus",cls:"不屬於五界 ─ 病毒（非細胞生物）",
+   c1:"我無所不在，會讓人感冒、發燒，也可能造成全球大流行；我能「感染」所有生物，從細菌到動植物都逃不過我。",
+   c2:"我的結構極度簡單，我<strong>沒有細胞</strong>——沒有細胞膜、沒有細胞質、沒有核膜，只有一段<strong>遺傳物質</strong>（DNA 或 RNA）包在<strong>蛋白質外殼</strong>裡。",
+   c3:"正因為我<strong>沒有細胞</strong>，我無法獨立進行任何生命活動，必須<strong>侵入宿主細胞</strong>才能複製繁殖；五界分類系統裡沒有我的位置，我是生物界的「<strong>局外人</strong>」。"}
 ]
 };
 
-const KN={monera:"原核生物界",protista:"原生生物界",fungi:"真菌界",plantae:"植物界",animalia:"動物界"};
+const KN={monera:"原核生物界",protista:"原生生物界",fungi:"真菌界",plantae:"植物界",animalia:"動物界",virus:"特殊題 ─ 病毒"};
 const PTS_LABEL={5:"第一條線索後作答 🥇",3:"第二條線索後作答 🥈",1:"第三條線索後作答 🥉",0:"本題未得分"};
-
-/* 病毒：特殊題，不屬於五界，每局必出現一次 */
-const VIRUS={
-  name:"病毒",sub:"Virus",cls:"不屬於五界 ─ 病毒（非細胞生物）",kingdom:"virus",
-  c1:"我無所不在，會讓人感冒、發燒，也可能造成全球大流行；我能「感染」所有生物，從細菌到動植物都逃不過我。",
-  c2:"我的結構極度簡單，我<strong>沒有細胞</strong>——沒有細胞膜、沒有細胞質、沒有核膜，只有一段<strong>遺傳物質</strong>（DNA 或 RNA）包在<strong>蛋白質外殼</strong>裡。",
-  c3:"正因為我<strong>沒有細胞</strong>，我無法獨立進行任何生命活動，必須<strong>侵入宿主細胞</strong>才能複製繁殖；五界分類系統裡沒有我的位置，我是生物界的「<strong>局外人</strong>」。"
-};
 
 /* ── STATE ── */
 let mode='self'; // 'self' | 'class'
-let sel_k=['monera','protista','fungi','plantae','animalia'];
+let sel_k=['monera','protista','fungi','plantae','animalia','virus'];
 let sel_n=10, questions=[], qi=0, clue=1, score=0, history=[], timer=null, tsec=0;
 
 /* ── AUDIO ── */
@@ -759,7 +759,7 @@ function goSetup(){
 /* ── SETUP ── */
 function toggleK(el){
   const k=el.dataset.k;
-  if(el.classList.contains('sel')){if(sel_k.length<=1){toast('至少選擇一個界！');return;}el.classList.remove('sel');sel_k=sel_k.filter(x=>x!==k);}
+  if(el.classList.contains('sel')){if(sel_k.length<=1){toast('至少選擇一個界別！');return;}el.classList.remove('sel');sel_k=sel_k.filter(x=>x!==k);}
   else{el.classList.add('sel');sel_k.push(k);}
   updateNote();
 }
@@ -767,22 +767,38 @@ function setCount(n,btn){
   sel_n=n;document.querySelectorAll('.cnt-btn').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');updateNote();
 }
 function updateNote(){
-  const total=sel_k.reduce((s,k)=>s+QB[k].length,0);
-  const actual=Math.min(sel_n,total)+1; // +1 for virus
-  document.getElementById('count-note').textContent=`從選定的 ${sel_k.length} 個界（共 ${total} 題）中隨機抽取 ${actual-1} 題，另加病毒特殊題共 ${actual} 題`;
+  const hasVirus = sel_k.includes('virus');
+  const reg_k = sel_k.filter(k=>k!=='virus');
+  const total = reg_k.reduce((s,k)=>s+QB[k].length,0) + (hasVirus?1:0);
+  const actual = Math.min(sel_n, total);
+  let txt = `從選定的類別中隨機抽取 ${actual} 題`;
+  if(hasVirus) txt += `（其中包含 1 題必定出現的病毒特殊題）`;
+  document.getElementById('count-note').textContent = txt;
 }
 function shuffle(a){return a.sort(()=>Math.random()-0.5);}
 
 /* ── GAME ── */
 function startGame(){
-  let pool=[];sel_k.forEach(k=>QB[k].forEach(q=>pool.push({...q,kingdom:k})));
+  const hasVirus = sel_k.includes('virus');
+  const reg_k = sel_k.filter(k=>k!=='virus');
+  let pool=[];
+  reg_k.forEach(k=>QB[k].forEach(q=>pool.push({...q,kingdom:k})));
   shuffle(pool);
-  const regular=pool.slice(0,Math.min(sel_n,pool.length));
-  // Insert virus at a random position (not first, not last — keep some suspense)
-  const insertAt=regular.length<=1?0:Math.floor(Math.random()*(regular.length-1))+1;
-  regular.splice(insertAt,0,VIRUS);
-  questions=regular;
-  qi=0;score=0;history=[];
+
+  let targetCount = Math.min(sel_n, pool.length + (hasVirus ? 1 : 0));
+  let regCount = hasVirus ? targetCount - 1 : targetCount;
+
+  let selected = pool.slice(0, regCount);
+  
+  if (hasVirus && QB.virus.length > 0) {
+    const v = {...QB.virus[0], kingdom: 'virus'};
+    // Insert at random position, but avoid very end if there are enough questions for suspense
+    const insertAt = selected.length === 0 ? 0 : Math.floor(Math.random() * selected.length);
+    selected.splice(insertAt, 0, v);
+  }
+  
+  questions = selected;
+  qi = 0; score = 0; history = [];
 
   // Show/hide mode-specific UI
   const isSelf=mode==='self';
