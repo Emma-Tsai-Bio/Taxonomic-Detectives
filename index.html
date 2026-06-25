@@ -225,7 +225,7 @@ body::before{
 .btn-ans:hover{border-color:var(--sienna);color:var(--sienna);}
 
 /* ════════════════════════════════
-   ANSWER SCREEN  (no image)
+   ANSWER SCREEN
 ════════════════════════════════ */
 #screen-answer{
   padding:clamp(14px,2.5vw,40px) clamp(14px,3vw,52px);
@@ -246,7 +246,6 @@ body::before{
 .gain-label{font-size:clamp(12px,1.4vw,15px);color:var(--ink3);}
 .gain-total{margin-left:auto;font-size:clamp(18px,2.2vw,24px);font-weight:900;color:var(--ink4);}
 
-/* class mode: no score box, just classification */
 .ans-right{flex:1;min-width:260px;display:flex;flex-direction:column;gap:clamp(8px,1.2vh,12px);}
 .mini-clues{display:flex;flex-direction:column;gap:6px;}
 .mini-clue{
@@ -323,7 +322,6 @@ body::before{
 <body>
 <div id="app">
 
-<!-- ══ MODE SELECT ══ -->
 <div class="screen active" id="screen-mode">
   <div class="mode-logo"><span style="font-size:clamp(20px,2.5vw,28px)">🌿</span><span class="mode-logo-text">生物課互動遊戲</span></div>
   <h1 class="mode-title">猜猜我是誰<br><span>五界大探索</span></h1>
@@ -341,7 +339,7 @@ body::before{
     <div class="mode-card" id="card-class" onclick="selectMode('class')">
       <div class="mode-icon">👨‍🏫</div>
       <div class="mode-card-title">全班挑戰模式</div>
-      <div class="mode-card-desc">適合課堂投影。老師手動控制線索、自行判斷學生答題後按下對應分數，<b>沒有倒數計時</b>。</div>
+      <div class="mode-card-desc">適合課堂投影。老師手手動控制線索、自行判斷學生答題後按下對應分數，<b>沒有倒數計時</b>。</div>
       <div class="mode-card-tags">
         <span class="tag tag-neutral">🖱 老師操作</span>
         <span class="tag tag-sienna">✏️ 手動計分</span>
@@ -351,7 +349,6 @@ body::before{
   <button class="mode-next-btn" onclick="goSetup()">下一步：選擇題目 →</button>
 </div>
 
-<!-- ══ SETUP ══ -->
 <div class="screen" id="screen-setup">
   <button class="setup-back" onclick="go('screen-mode')">← 返回</button>
   <div class="setup-mode-badge" id="setup-mode-badge">🧑‍💻 自行挑戰模式</div>
@@ -374,7 +371,7 @@ body::before{
           <span class="k-icon">🌿</span><div class="k-name">植物界</div><div class="k-sub">蕨類・裸子・被子</div><div class="k-check">✓</div>
         </div>
         <div class="kcard sel" data-k="animalia" onclick="toggleK(this)">
-          <span class="k-icon">🦁</span><div class="k-name">動物界</div><div class="k-sub">哺乳・爬蟲・鳥</div><div class="k-check">✓</div>
+          <span class="k-icon">🦁</span><div class="k-name">動物界</div><div class="k-sub">脊索・無脊椎</div><div class="k-check">✓</div>
         </div>
       </div>
       <div style="margin-top:16px">
@@ -406,7 +403,6 @@ body::before{
   <button class="start-btn" onclick="startGame()">開始遊戲 🌱</button>
 </div>
 
-<!-- ══ QUESTION ══ -->
 <div class="screen" id="screen-question">
   <div class="q-header">
     <div class="tag tag-moss" id="q-num">第 1 題</div>
@@ -415,7 +411,6 @@ body::before{
   </div>
   <div class="progress-wrap"><div class="progress-fill" id="prog-fill" style="width:0%"></div></div>
 
-  <!-- Timer row: shown only in self mode -->
   <div class="timer-row" id="timer-row">
     <span class="timer-label">倒數計時</span>
     <div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
@@ -440,13 +435,11 @@ body::before{
     </div>
   </div>
 
-  <!-- Self mode controls -->
   <div class="action-row" id="self-actions">
     <button class="btn-next" id="btn-next" onclick="nextClue()">顯示線索二 ▼</button>
     <button class="btn-ans" onclick="revealAnswer(0)">查看答案</button>
   </div>
 
-  <!-- Class mode controls: teacher scores manually -->
   <div class="teacher-bar" id="class-actions" style="display:none">
     <span class="teacher-label">👨‍🏫 老師計分：學生答對，本題得幾分？</span>
     <button class="pts-btn gold-btn" onclick="revealAnswer(5)">🥇 5分</button>
@@ -457,7 +450,6 @@ body::before{
   </div>
 </div>
 
-<!-- ══ ANSWER ══ -->
 <div class="screen" id="screen-answer">
   <div class="ans-header">
     <div class="tag tag-moss">🎯 答案揭曉</div>
@@ -473,7 +465,6 @@ body::before{
         <div class="cls-label">正確分類</div>
         <div class="cls-value" id="ans-cls"></div>
       </div>
-      <!-- score box: self mode only -->
       <div class="score-gain-box" id="ans-score-box">
         <div>
           <div class="gain-pts" id="gain-pts">+5 分</div>
@@ -489,7 +480,6 @@ body::before{
   </div>
 </div>
 
-<!-- ══ SCOREBOARD ══ -->
 <div class="screen" id="screen-board">
   <div class="board-title" id="board-title">🏆 遊戲結束！</div>
   <div class="board-score-big" id="board-score">0</div>
@@ -499,13 +489,11 @@ body::before{
   <div class="board-btns" id="board-btns"></div>
 </div>
 
-</div><!-- #app -->
-<div id="toast"></div>
+</div><div id="toast"></div>
 
 <script>
 /* ══════════════════════════════════════════
    QUESTION BANK
-   原核生物界 7題 / 其他各界 8題
 ══════════════════════════════════════════ */
 const QB={
 monera:[
@@ -653,39 +641,63 @@ plantae:[
    c3:"我有粗短直立的莖幹和大型<strong>羽狀複葉</strong>，雌雄異株；我和松、柏同屬<strong>裸子植物</strong>，但外觀上和松樹差異很大。"},
 ],
 animalia:[
-  {name:"蝙蝠",sub:"Chiroptera",cls:"動物界 ─ 哺乳類",
-   c1:"我是多細胞動物，是少數能<strong>真正飛翔</strong>的哺乳動物，棲息在山洞或樹林中，白天休息，黃昏後出來活動。",
-   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>內溫動物</strong>（恆溫），能靠自身代謝維持固定體溫，不受外界溫度影響。",
-   c3:"我體表有<strong>毛</strong>，是<strong>胎生</strong>動物，幼體出生後靠母體<strong>乳汁</strong>哺育；雖然我會飛，但我<strong>沒有羽毛</strong>，翅膀其實是皮膜，還能靠發射<strong>超聲波</strong>在黑暗中導航。"},
-  {name:"山椒魚",sub:"Hynobius（台灣山椒魚）",cls:"動物界 ─ 兩生類",
-   c1:"我是多細胞動物，外型長得像蜥蜴，喜歡躲在山區陰暗潮濕的地方，是台灣珍貴的保育類動物。",
-   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>外溫動物</strong>（冷血），體溫隨外界環境變化，無法自行調節。",
-   c3:"我<strong>沒有鱗片</strong>，皮膚濕潤裸露（可輔助呼吸）；我必須回到<strong>水中產卵（體外受精）</strong>，幼體用<strong>鰓</strong>呼吸，成體改用<strong>肺和皮膚</strong>呼吸——「兩生」二字正是指這種水陸兩棲的特性。"},
-  {name:"鯨魚",sub:"Cetacea",cls:"動物界 ─ 哺乳類",
-   c1:"我是多細胞動物，一輩子生活在海洋中，外型流線型巨大，是地球上現存體型最大的動物。",
-   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>內溫動物</strong>，能維持固定體溫；我<strong>沒有鰓</strong>，必須定時浮出水面用<strong>肺</strong>呼吸。",
-   c3:"我體表有稀疏的<strong>毛</strong>，是<strong>胎生</strong>動物，幼體出生後靠母體<strong>乳汁</strong>哺育——雖然生活在海裡，但這三項特徵讓我確實屬於哺乳類。"},
-  {name:"鴨嘴獸",sub:"Ornithorhynchus anatinus",cls:"動物界 ─ 哺乳類",
-   c1:"我是多細胞動物，外觀非常奇特：我有一張像鴨子的扁嘴、像水獺的身體和像海狸的扁平尾巴，生活在澳洲的河流中。",
-   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>內溫動物</strong>，體表有<strong>毛</strong>，用<strong>肺</strong>呼吸。",
-   c3:"我最特別的地方是：我雖然是哺乳類，卻是<strong>卵生</strong>的（會產下有殼的卵）！小寶寶孵化後，母體會分泌<strong>乳汁</strong>從皮膚滲出哺育，是哺乳類中極少數的<strong>單孔目</strong>動物。"},
-  {name:"眼鏡蛇",sub:"Naja（眼鏡王蛇）",cls:"動物界 ─ 爬蟲類",
-   c1:"我是多細胞動物，體型修長，沒有四肢，靠身體的肌肉和鱗片貼地滑行，是讓許多人聞之色變的生物。",
-   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>外溫動物</strong>（冷血），體表覆蓋著<strong>鱗片</strong>；用<strong>肺</strong>呼吸，在陸地產下有<strong>革質外殼</strong>的卵。",
-   c3:"當受到威脅時，我會撐開<strong>頸部皮褶</strong>讓自己顯得更巨大（這也是「眼鏡蛇」名稱的由來），並能噴射或注入<strong>毒液</strong>，是爬蟲類中極具代表性的物種。"},
-  {name:"企鵝",sub:"Spheniscidae",cls:"動物界 ─ 鳥類",
-   c1:"我是多細胞動物，生活在南半球，尤其是南極，穿著黑白相間的「禮服」，走路搖搖擺擺，非常可愛。",
-   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>內溫動物</strong>，體表覆蓋著<strong>羽毛</strong>，用<strong>肺</strong>呼吸，是<strong>卵生</strong>動物。",
-   c3:"雖然我有翅膀，但我<strong>不能飛翔</strong>，翅膀演化成鰭狀用來游泳；孵蛋時由<strong>雄企鵝</strong>把蛋放在腳背上，用腹部皮膚保溫，在零下酷寒中站立數個月不進食。"},
-  {name:"鮭魚",sub:"Oncorhynchus（太平洋鮭）",cls:"動物界 ─ 魚類",
-   c1:"我是多細胞動物，一生橫跨淡水和海洋兩種環境，成年後會從大海千里游回<strong>出生的河流上游</strong>產卵，這段旅程堪稱自然界最壯觀的生命現象之一。",
-   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我是<strong>外溫動物</strong>，體表有<strong>鱗片</strong>，終生用<strong>鰓</strong>呼吸，靠鰭游泳。",
-   c3:"我靠<strong>體外受精</strong>繁殖，雌魚在河床砂礫中產卵後便死亡；我的屍體成為河岸森林的養分，完成一個從海洋到森林的完整<strong>生態循環</strong>。"},
-  {name:"獨角仙",sub:"Allomyrina dichotoma",cls:"動物界 ─ 昆蟲類",
-   c1:"我是多細胞動物，夏天的夜晚常被路燈吸引，飛行時會發出嗡嗡聲，是台灣山區很受小朋友喜愛的大型甲蟲。",
-   c2:"我的細胞<strong>有核膜</strong>，<strong>沒有細胞壁</strong>，<strong>沒有葉綠體</strong>；我<strong>沒有脊椎骨</strong>，體表有堅硬的<strong>幾丁質外骨骼</strong>，身體分為<strong>頭、胸、腹</strong>三部分，有<strong>六隻腳</strong>。",
-   c3:"雄性頭部有一根長長的<strong>角</strong>，用來打鬥爭奪配偶；我一生經歷卵→幼蟲→蛹→成蟲四個階段，稱為「<strong>完全變態</strong>」，幼蟲（雞母蟲）住在腐植土裡。"},
-],
+  {name:"蝙蝠",sub:"代表生物",cls:"動物界 ─ 哺乳類 (胎生)",
+   c1:"雖然能飛翔卻沒有羽毛，前肢與身體間有皮膜。",
+   c2:"白天多在山洞倒掛休息，通常在黃昏後才出沒。",
+   c3:"胎兒在母體內發育完全才出生，幼體吸吮母乳。"},
+  {name:"鯨魚",sub:"代表生物",cls:"動物界 ─ 哺乳類 (胎生)",
+   c1:"擁有流線型的身軀，終生都在廣大的海洋中度過。",
+   c2:"胎兒在母體內發育完全才出生，幼體依賴母乳。",
+   c3:"住在海裡卻不具備鰓，必須浮出水面用肺呼吸。"},
+  {name:"袋鼠",sub:"代表生物",cls:"動物界 ─ 哺乳類 (有袋類)",
+   c1:"體溫能夠維持恆定，大多分布在澳洲大陸。",
+   c2:"屬於胎生但胎兒發育極不完全，會產下早產幼兒。",
+   c3:"幼體出生後，必須爬入母體的育兒袋中吸吮乳汁。"},
+  {name:"鴨嘴獸",sub:"代表生物",cls:"動物界 ─ 哺乳類 (卵生)",
+   c1:"體溫能維持恆定，母體會產下具有外殼的卵來繁殖。",
+   c2:"大多棲息在澳洲的溪流周邊，外觀具有像鴨子的嘴。",
+   c3:"缺乏明顯的乳頭構造，幼體孵化後舔食母體分泌的乳汁。"},
+  {name:"鳥類",sub:"代表生物：企鵝、麻雀",cls:"動物界 ─ 鳥類",
+   c1:"體溫能維持恆定，具備絕佳的視覺與聽覺。",
+   c2:"骨骼中空輕盈，會產下具堅硬外殼的卵。",
+   c3:"體表覆蓋保暖羽毛，前肢特化成一對翅膀。"},
+  {name:"爬蟲類",sub:"代表生物：海龜、蜥蜴",cls:"動物界 ─ 爬蟲類",
+   c1:"體溫隨環境改變，常藉由曬太陽來保暖。",
+   c2:"能完全適應陸地生活，會產下具革質外殼的卵。",
+   c3:"皮膚乾燥無腺體，體表覆蓋防水的鱗甲。"},
+  {name:"兩生類",sub:"代表生物：青蛙、山椒魚",cls:"動物界 ─ 兩生類",
+   c1:"體溫會隨外界變化，必須回到水中繁殖。",
+   c2:"卵沒有硬殼保護，幼體在水中用鰓呼吸。",
+   c3:"成體改用肺呼吸，並仰賴濕潤皮膚輔助。"},
+  {name:"魚類",sub:"代表生物：鯊魚、小丑魚",cls:"動物界 ─ 魚類",
+   c1:"體溫隨水溫變化，終生都在水中度過。",
+   c2:"擁有適應水中的流線身型，多為體外受精。",
+   c3:"體表大多具有鱗片，用鰓呼吸並靠鰭游泳。"},
+  {name:"節肢動物門",sub:"代表生物：獨角仙、螃蟹",cls:"無脊椎動物 ─ 節肢動物",
+   c1:"棲地遍布水陸空，是動物界中種類與數量最多的一群。",
+   c2:"身體與附肢都有分節，部分種類成長時會經歷變態。",
+   c3:"體表具有堅硬的外骨骼，因此成長時必須不斷蛻皮。"},
+  {name:"軟體動物門",sub:"代表生物：蝸牛、章魚",cls:"無脊椎動物 ─ 軟體動物",
+   c1:"棲息於水中或陸地潮濕處，靠著發達的肌肉來移動。",
+   c2:"身體非常柔軟且不分節，通常具有堅硬的外殼保護。",
+   c3:"部分種類的硬殼已經退化或隱藏於體內，遇到危險時會噴墨。"},
+  {name:"環節動物門",sub:"代表生物：蚯蚓、水蛭",cls:"無脊椎動物 ─ 環節動物",
+   c1:"生活在土壤或水中，體表濕潤且沒有明顯的附肢。",
+   c2:"身體細長柔軟，主要靠著體壁肌肉的收縮來蠕動。",
+   c3:"身體由許多相似的體節所組成，外表呈現一環一環。"},
+  {name:"棘皮動物門",sub:"代表生物：海星、海膽",cls:"無脊椎動物 ─ 棘皮動物",
+   c1:"全都生活在海洋環境中，沒有任何淡水或陸生種類。",
+   c2:"成體的外觀大多呈現輻射對稱，身體沒有明顯分節。",
+   c3:"體表長有棘狀突起，利用特有的管足來移動或攝食。"},
+  {name:"刺絲胞動物門",sub:"代表生物：水母、海葵",cls:"無脊椎動物 ─ 刺絲胞動物",
+   c1:"大多生活在海洋環境中，體型多呈現輻射對稱。",
+   c2:"單一開口兼具進食與排泄功能，部分會與藻類或小魚有共生關係。",
+   c3:"開口周圍長有觸手，能利用特殊的刺絲胞麻痺獵物。"},
+  {name:"扁形動物門",sub:"代表生物：渦蟲、絛蟲",cls:"無脊椎動物 ─ 扁形動物",
+   c1:"生活於水中或寄生於生物體內，部分有極強再生能力。",
+   c2:"身體同樣只有單一開口，食物殘渣會從同一開口排出。",
+   c3:"身體非常扁平，且沒有體腔與分節，外觀像是一片葉子。"}
+]
 };
 
 const KN={monera:"原核生物界",protista:"原生生物界",fungi:"真菌界",plantae:"植物界",animalia:"動物界"};
