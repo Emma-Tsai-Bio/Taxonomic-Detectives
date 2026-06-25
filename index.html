@@ -338,7 +338,7 @@ body::before{
     <div class="mode-card" id="card-class" onclick="selectMode('class')">
       <div class="mode-icon">👨‍🏫</div>
       <div class="mode-card-title">全班挑戰模式</div>
-      <div class="mode-card-desc">適合課堂投影。老師手手動控制線索、自行判斷學生答題後按下對應分數，<b>沒有倒數計時</b>。</div>
+      <div class="mode-card-desc">適合課堂投影。老師手動控制線索、自行判斷學生答題後按下對應分數，<b>沒有倒數計時</b>。</div>
       <div class="mode-card-tags">
         <span class="tag tag-neutral">🖱 老師操作</span>
         <span class="tag tag-sienna">✏️ 手動計分</span>
@@ -775,7 +775,14 @@ function updateNote(){
   if(hasVirus) txt += `（其中包含 1 題必定出現的病毒特殊題）`;
   document.getElementById('count-note').textContent = txt;
 }
-function shuffle(a){return a.sort(()=>Math.random()-0.5);}
+/* 採用費雪-耶茨 (Fisher-Yates) 完美洗牌演算法 */
+function shuffle(a) {
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 
 /* ── GAME ── */
 function startGame(){
